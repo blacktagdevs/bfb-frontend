@@ -182,7 +182,7 @@
 .admin-milestone-named { border-color: #f1dca8; box-shadow: inset 3px 0 0 var(--amber); }
 .admin-dispute-exchange { display: flex; flex-direction: column; gap: 12px; }
 .admin-dispute-history { display: flex; flex-direction: column; align-items: flex-start; gap: 12px; }
-.admin-decision .match-withdrawn p { margin: 4px 0 0; color: var(--slate); }
+.admin-decision .match-withdrawn p, .admin-dispute-exchange .match-withdrawn p { margin: 4px 0 0; color: var(--slate); font-size: var(--text-base); line-height: 1.5; white-space: pre-wrap; overflow-wrap: anywhere; }
 
 @media (max-width: 620px) {
   .admin-dispute-milestones { padding: 14px 16px; }

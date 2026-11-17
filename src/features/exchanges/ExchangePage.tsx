@@ -204,7 +204,7 @@ function ExchangeView({ exchangeId }: { exchangeId: string }) {
               {exchange.completion.completed_at && <div><dt>Completed</dt><dd>{formatMatchDate(exchange.completion.completed_at)}</dd></div>}
               {exchange.status === 'cancelled' && <div><dt>Cancelled</dt><dd>{formatMatchDate(exchange.updated_at)}</dd></div>}
               <div><dt>Progress</dt><dd>{progressText(accepted, count)}</dd></div>
-              <div><dt>Next due</dt><dd>{exchange.next_due_date ? formatMatchDate(exchange.next_due_date) : 'Nothing due'}</dd></div>
+              {exchange.status === 'active' && <div><dt>Next due</dt><dd>{exchange.next_due_date ? formatMatchDate(exchange.next_due_date) : 'Nothing due'}</dd></div>}
               <div><dt>Review period</dt><dd>{days(exchange.review_period_days)}</dd></div>
               <div><dt>Revisions</dt><dd>{exchange.revision_limit === 0 ? 'None included' : `Up to ${exchange.revision_limit}`}</dd></div>
               <div><dt>Cancellation</dt><dd>{exchange.cancellation_notice_days === 0 ? 'No notice' : `${days(exchange.cancellation_notice_days)}’ notice`}</dd></div>

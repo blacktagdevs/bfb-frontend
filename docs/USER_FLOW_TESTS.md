@@ -4,7 +4,7 @@ Manual, end-to-end checks of everything built so far, through the start of Phase
 
 Each flow lists steps and what should happen. Tick a row when it passes. When one fails, note the flow number, the step, and what you saw, then file it or hand it to an agent.
 
-Last updated: 17 November 2026 (FE-6.2, delivering milestones).
+Last updated: 17 November 2026 (FE-6.5, cancellation and disputes).
 
 ## Setup
 
@@ -309,20 +309,50 @@ Use the agreement both businesses signed in 15.21.
 | 16.36 | Press "Completion record" twice, as each business | A new tab opens the record each time (a fresh link); the fingerprint under the button matches the record | [ ] |
 | 16.37 | Open `/exchanges` and the Completed tab, then the dashboard | Active no longer lists it; Completed (1) shows it with a green Completed pill and "Completed <date>". The dashboard's active list drops it and shows "Last completed: the exchange with …" with "See completed exchanges", which opens the Completed tab | [ ] |
 | 16.38 | Repeat 16.32 to 16.37 at phone width (about 390 px) | The panel and buttons wrap, the fingerprint wraps, no sideways scrolling | [ ] |
+| 16.39 | As a member of either business, open an active exchange | "If something goes wrong" under Status with a lock line and no buttons | [ ] |
+| 16.40 | As an owner or administrator, press "Report a problem", then "Open dispute" with nothing filled in | The dialog says to talk first (15.1) and that BFB doesn't decide who is right (15.6); "Choose what the problem is about." and "Describe the problem." and nothing is sent. Escape closes it | [ ] |
+| 16.41 | Choose "A deadline was missed", describe it, tick milestone 2 and open the dispute | Toast "Dispute opened…"; a red "Dispute open" panel at the top with the category, you and the time, "About Milestone 2 · …", your description, "<Other> hasn't responded yet." and "Withdraw dispute"; Status shows "Dispute: Open"; "Report a problem" is gone; History adds "Dispute opened: a deadline was missed" | [ ] |
+| 16.42 | Once every milestone is accepted with a dispute open (or straight away on the panel) | The completion panel says it can't be completed yet because a dispute is open; no "Mark exchange complete" | [ ] |
+| 16.43 | As the other business, press "Respond", then "Send response" empty, then write one and send | "Write your response." first; then toast "Response added to the dispute.", the response in the panel with who and when, no more buttons; History adds "Response to the dispute added". The first business sees the same response | [ ] |
+| 16.44 | As the opener, open a second exchange's dispute and press "Withdraw dispute" | Toast "Dispute withdrawn…"; the panel goes; "Closed disputes" shows "Withdrawn by <business> on <date>."; History adds "Dispute withdrawn"; "Report a problem" is back | [ ] |
+| 16.45 | Press "Cancel exchange", then "Give notice" with no reason | The dialog names the date it would take effect (14 days on), what happens at the end (13.5 and 14), "Say why you're cancelling." and nothing is sent. "Go back" closes it | [ ] |
+| 16.46 | Write a reason and give notice | Toast "Notice given. The exchange is cancelled on <date> unless you withdraw it, or sooner if <other> agrees."; an amber "Notice to cancel" panel with who, when, the date it takes effect, the reason and "Withdraw notice"; Status adds "Cancels on <date>"; "Cancel exchange" is gone; History adds "Notice to cancel given: …". Delivery and review still work | [ ] |
+| 16.47 | Press "Withdraw notice" | Toast "Cancellation notice withdrawn. The exchange carries on."; the panel goes; History adds "Cancellation notice withdrawn". Give notice again for the next steps | [ ] |
+| 16.48 | As the other business (and as its member) | The same panel with "Agree to cancel now" (a member sees a lock line), no "Withdraw notice" | [ ] |
+| 16.49 | Press "Agree to cancel now", read the dialog, then agree | "Go back" has focus and Escape closes it; after agreeing: toast "Exchange cancelled…", a grey "Exchange cancelled" panel, the Cancelled pill, Status "Cancelled <date>", no delivery or review buttons, "Report a problem" still there; History adds "Exchange cancelled: both businesses agreed to cancel now" | [ ] |
+| 16.50 | Let a notice run out instead (in a throwaway database, move the notice's `effective_at` and the exchange's `cancellation_effective_at` into the past, then reload or run `python -m src.jobs.exchange_timers`) | The exchange is cancelled; History reads "Exchange cancelled: the notice period ended" by BFB | [ ] |
+| 16.51 | Open `/exchanges`, the Cancelled tab, then the dashboard | Active no longer lists it; Cancelled (1) shows it with a grey Cancelled pill and "Cancelled <date>"; the dashboard's active list and stat leave it out | [ ] |
+| 16.52 | After staff close a dispute (flow 17), open the exchange as either business | "Closed disputes" shows "Closed by BFB staff on <date>: resolved by the businesses." and the staff note; History says "Dispute closed by BFB staff: …" by "BFB staff", with no staff name anywhere | [ ] |
+| 16.53 | Repeat 16.40 to 16.49 at phone width (about 390 px) | Panels and dialogs fit, the milestone checkboxes wrap, no sideways scrolling | [ ] |
 
-## 17. Across the app
+## 17. Staff: disputes
+
+Use the dispute opened in 16.41 (with the response from 16.43) and the staff account.
+
+| # | Steps | Expected | Pass |
+|---|---|---|---|
+| 17.1 | Open Admin → Disputes | "Disputes" is highlighted in the sidebar and the admin tabs; the dispute with both businesses, the category, who opened it and when, "Response received", an amber Open pill and "Exchange active". Open disputes come first, oldest first | [ ] |
+| 17.2 | Filter by Closed, then Open | Only closed ones (or "No closed disputes yet"), then only open ones | [ ] |
+| 17.3 | Open the dispute | The blue box says BFB doesn't judge disputes and staff can't change milestones or the exchange; Statements show both sides; every milestone with its status and latest delivery (files open in a new tab), milestone 2 marked "Named in the dispute"; Exchange history with names (staff names too); the Exchange card shows a running notice to cancel if there is one. No accept, change or cancel buttons anywhere | [ ] |
+| 17.4 | Press "Close dispute", then "Close dispute" in the dialog with nothing filled in | The dialog says both businesses see the outcome and note but not your name, and nothing else changes; "Choose how the dispute ended." and "Write a note for both businesses." and nothing is sent | [ ] |
+| 17.5 | Choose "Resolved by the businesses", write a note and close | Toast "Dispute closed…"; Outcome shows how it ended, your name as BFB staff and the note; the pill reads Closed; the exchange's milestones and status are unchanged. The businesses see it (16.52) and can now complete the exchange if every milestone is accepted | [ ] |
+| 17.6 | In a second window, close the same dispute again from a page loaded before 17.5 | Red notice that it was already closed, and the page shows the outcome | [ ] |
+| 17.7 | As a normal user, open `/admin/disputes` | No access (sent to the dashboard) | [ ] |
+| 17.8 | Repeat 17.1 and 17.3 at phone width (about 390 px) | Rows and cards stack, no sideways scrolling | [ ] |
+
+## 18. Across the app
 
 | # | Check | Expected | Pass |
 |---|---|---|---|
-| 17.1 | Repeat flows 10, 11, 13, 14, 15 and 16 at phone width (about 390 px) | Usable, no sideways scrolling | [ ] |
-| 17.2 | Use the main flows with the keyboard only | Every control reachable; dialogs trap focus and close with Escape | [ ] |
-| 17.3 | Stop the API and visit each main page | Clear error with a retry, no blank screens | [ ] |
-| 17.4 | Slow the network (browser throttling) | Loading states show, no layout jumps | [ ] |
-| 17.5 | Search the whole app for fit numbers | None. Fit is always Strong, Potential or Limited in words | [ ] |
+| 18.1 | Repeat flows 10, 11, 13, 14, 15, 16 and 17 at phone width (about 390 px) | Usable, no sideways scrolling | [ ] |
+| 18.2 | Use the main flows with the keyboard only | Every control reachable; dialogs trap focus and close with Escape | [ ] |
+| 18.3 | Stop the API and visit each main page | Clear error with a retry, no blank screens | [ ] |
+| 18.4 | Slow the network (browser throttling) | Loading states show, no layout jumps | [ ] |
+| 18.5 | Search the whole app for fit numbers | None. Fit is always Strong, Potential or Limited in words | [ ] |
 
 ## Known gaps (not failures)
 
-- Messages, the landing page, the dashboard's "Recommended for you", activity and its other stats still use demo data until their phases. Exchanges are real, from delivery and review to completion; cancellation and disputes arrive in FE-6.5.
+- Messages, the landing page, the dashboard's "Recommended for you", activity and its other stats still use demo data until their phases. Exchanges are real, from delivery and review to completion, cancellation and disputes. Neither business is notified of a notice to cancel or a dispute until Phase 7; each sees it on the exchange.
 - Emails are printed, not sent, until an email provider is chosen ([DESIGN_SIGNOFFS.md](DESIGN_SIGNOFFS.md) row 37).
 - Signing uses the development provider (a typed name inside BFB) locally. Staging and production have no signature provider yet, so the second confirmation there says signing isn't switched on ([DESIGN_SIGNOFFS.md](DESIGN_SIGNOFFS.md) row 135).
 - Design and product items waiting on sign-off are in [DESIGN_SIGNOFFS.md](DESIGN_SIGNOFFS.md). A flow that passes here can still change there.

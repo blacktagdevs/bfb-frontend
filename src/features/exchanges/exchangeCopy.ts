@@ -290,7 +290,7 @@ export function historyTitle(entry: ExchangeEvent, revisionLimit: number | null)
     case 'exchange.completion_withdrawn':
       return entry.metadata.by_requesting_business === false ? 'Completion request declined' : 'Completion request withdrawn'
     case 'exchange.cancelled':
-      if (entry.metadata.how === 'agreed') return 'Exchange cancelled: the other business agreed to the notice'
+      if (entry.metadata.how === 'agreed') return 'Exchange cancelled: both businesses agreed to cancel now'
       if (entry.metadata.how === 'notice') return 'Exchange cancelled: the notice period ended'
       return 'Exchange cancelled'
     case 'exchange.cancellation_noticed': {
