@@ -181,7 +181,7 @@ describe('exchanges page', () => {
 })
 
 describe('exchange page', () => {
-  it('shows the milestones read-only, with who delivers each and its due date', async () => {
+  it('shows the milestones with who delivers each and its due date', async () => {
     start()
     renderAt(`/exchanges/${EXCHANGE_ID}`)
 
@@ -200,8 +200,7 @@ describe('exchange page', () => {
     expect(milestones[1]).toHaveTextContent('You receive · Northside Studio delivers to Northstar Digital')
     expect(milestones[1]).toHaveTextContent('January books closed.')
     expect(milestones[2]).toHaveTextContent('No due date')
-    expect(screen.getByText(/Milestones are read-only for now/)).toBeInTheDocument()
-    expect(within(screen.getByRole('region', { name: 'Milestones' })).queryByRole('button')).not.toBeInTheDocument()
+    expect(milestones[0]).toHaveTextContent('Part of Brand identity sprint')
 
     const status = screen.getByRole('region', { name: 'Status' })
     expect(within(status).getByText('Next due').nextSibling).toHaveTextContent('18 Jan 2027')
@@ -228,7 +227,7 @@ describe('dashboard', () => {
     const rows = within(list).getAllByRole('listitem')
     expect(rows).toHaveLength(1)
     expect(rows[0]).toHaveTextContent('Exchange with Northside Studio')
-    expect(rows[0]).toHaveTextContent('3 milestones · active since 20 Nov')
+    expect(rows[0]).toHaveTextContent('0 of 3 milestones accepted · active since 20 Nov')
     expect(rows[0]).toHaveTextContent('Next due 18 Jan 2027')
     expect(screen.queryByText('with Peachtree Growth Co.')).not.toBeInTheDocument()
     expect(screen.queryByText('Website ↔ Growth campaign')).not.toBeInTheDocument()

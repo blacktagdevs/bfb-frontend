@@ -4,7 +4,7 @@ Manual, end-to-end checks of everything built so far, through the start of Phase
 
 Each flow lists steps and what should happen. Tick a row when it passes. When one fails, note the flow number, the step, and what you saw, then file it or hand it to an agent.
 
-Last updated: 13 November 2026 (FE-5.1, agreements).
+Last updated: 17 November 2026 (FE-6.1, exchange workspace).
 
 ## Setup
 
@@ -272,12 +272,16 @@ Use the agreement both businesses signed in 15.21.
 | # | Steps | Expected | Pass |
 |---|---|---|---|
 | 16.1 | Press "Open the exchange" on the signed agreement | `/exchanges/<id>`: "EXCHANGE", the other business's name, "Active since …" with a link back to the signed agreement and a green Active pill. "Exchanges" is highlighted in the sidebar | [ ] |
-| 16.2 | Read the milestones | Every milestone from the accepted proposal, in order, each with "You deliver" or "You receive" and who delivers to whom, its due date, description and "Done when: …", and "Not started". No buttons; a note says milestones are read-only for now. Status shows the next due date and links to the agreement and proposal | [ ] |
+| 16.2 | Read the milestones | Every milestone from the accepted proposal, in order, each with "You deliver" or "You receive" and who delivers to whom, its due date, the service it is part of, description and "Done when: …", and a grey "Not started" pill. Status shows progress, the next due date, review period, revisions, cancellation notice and links to the agreement and proposal | [ ] |
 | 16.3 | Open `/exchanges` | The exchange in the prototype's card with the other business's logo or initials, "Business exchange with …", Active, milestones, next due date and start date, "Signed agreement" and "View details". No demo exchanges. Completed is empty | [ ] |
 | 16.4 | Open the dashboard | "Your active exchanges" lists the exchange with "View exchange"; the "Active exchanges" stat shows 1 and when the next milestone is due. No demo exchanges, and no "3" next to Exchanges in the sidebar | [ ] |
 | 16.5 | Open the exchange as the other business | The same milestones, with "You deliver" and "You receive" swapped | [ ] |
 | 16.6 | Log in as a third business: open the exchange's link, then `/exchanges` and the dashboard | "We couldn't find this exchange", naming the business you are acting for; "No active exchanges yet" linking to agreements; the dashboard says there are none yet | [ ] |
 | 16.7 | Repeat 16.1, 16.3 and 16.4 at phone width (about 390 px) | Cards and milestones stack, no sideways scrolling | [ ] |
+| 16.8 | Read "Where it stands" | "0 of 3 milestones accepted." with an empty progress bar, and "Next step for <your business>: Deliver "<your first milestone>" by …". As the other business, the next step is its own first milestone, or that there is nothing to do until you deliver | [ ] |
+| 16.9 | Read "What each business provides" | Both businesses' services from the accepted proposal, yours first, with values, deliverables and "Not included", each side's total, and the cash adjustment as agreed (or "No cash changes hands.") | [ ] |
+| 16.10 | Read History | "Exchange started: both businesses signed the agreement" by BFB, with the date and time it became active. More entries appear as milestones are delivered (flow 16.11 on) | [ ] |
+| 16.11 | After a milestone is accepted (FE-6.3), open `/exchanges` and the dashboard | The card says "3 milestones, 1 accepted" and its bar is a third full; the dashboard row says "1 of 3 milestones accepted" with the same bar | [ ] |
 
 ## 17. Across the app
 
@@ -291,7 +295,7 @@ Use the agreement both businesses signed in 15.21.
 
 ## Known gaps (not failures)
 
-- Messages, the landing page, the dashboard's "Recommended for you", activity and its other stats still use demo data until their phases. Exchanges are real but read-only until delivery (Phase 6).
+- Messages, the landing page, the dashboard's "Recommended for you", activity and its other stats still use demo data until their phases. Exchanges are real; delivering, reviewing and completing them arrive through Phase 6.
 - Emails are printed, not sent, until an email provider is chosen ([DESIGN_SIGNOFFS.md](DESIGN_SIGNOFFS.md) row 37).
 - Signing uses the development provider (a typed name inside BFB) locally. Staging and production have no signature provider yet, so the second confirmation there says signing isn't switched on ([DESIGN_SIGNOFFS.md](DESIGN_SIGNOFFS.md) row 135).
 - Design and product items waiting on sign-off are in [DESIGN_SIGNOFFS.md](DESIGN_SIGNOFFS.md). A flow that passes here can still change there.

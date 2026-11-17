@@ -62,3 +62,38 @@ ul.exchange-page-list { list-style: none; margin: 0; padding: 0; }
   .exchange-facts { grid-template-columns: 1fr 1fr; }
   .exchange-milestone { grid-template-columns: 1fr; }
 }
+
+/* Exchange workspace (FE-6.1): status pills, next step, progress, what each business provides
+   and the history. */
+.exchange-pill-completed { background: var(--green-pale); border-color: #ccecdf; color: var(--green); }
+.exchange-pill-cancelled { color: var(--muted); }
+.exchange-standing-completed { background: var(--green-pale); }
+.exchange-standing-cancelled { background: #fbfcfd; border-color: var(--border); }
+.exchange-standing .exchange-next-step { color: var(--navy); }
+.exchange-next-step strong { color: var(--navy); }
+.exchange-progress-bar { height: 6px; background: rgba(255, 255, 255, .8); border: 1px solid #ccecdf; border-radius: var(--radius-xs); overflow: hidden; max-width: 320px; }
+.exchange-progress-bar span { display: block; height: 100%; background: var(--green); }
+
+.exchange-milestone-head .match-pill.exchange-milestone-pill-submitted { background: var(--pale-blue); border-color: #c9e5ff; color: var(--blue); }
+.exchange-milestone-head .match-pill.exchange-milestone-pill-changes_requested { background: #fffaf0; border-color: #f3e5bf; color: #9a6700; }
+.exchange-milestone-head .match-pill.exchange-milestone-pill-accepted { background: var(--green-pale); border-color: #ccecdf; color: var(--green); }
+.exchange-milestone p.exchange-milestone-review { color: var(--navy); font-weight: 600; }
+.exchange-milestone-actions { display: flex; flex-direction: column; gap: 10px; border-top: 1px solid var(--border); padding-top: 10px; margin-top: 4px; }
+
+.exchange-provides { flex-direction: column; align-items: stretch; gap: 12px; }
+.exchange-provides .proposal-doc-side h3.exchange-provides-title { margin: 0; color: var(--text-subtle); font-size: var(--text-md); letter-spacing: .06em; text-transform: uppercase; overflow-wrap: anywhere; }
+
+.exchange-history { list-style: none; margin: 0; padding: 0; width: 100%; display: flex; flex-direction: column; }
+.exchange-history-entry { display: grid; grid-template-columns: 14px 1fr; gap: 10px; padding: 9px 0; border-top: 1px solid var(--border); }
+.exchange-history-entry:first-child { border-top: 0; padding-top: 0; }
+.exchange-history-dot { width: 10px; height: 10px; margin-top: 4px; border-radius: 50%; background: var(--blue); }
+.exchange-history-system .exchange-history-dot, .exchange-history-staff .exchange-history-dot { background: var(--navy); }
+.exchange-history-entry > div { display: flex; flex-direction: column; gap: 2px; min-width: 0; }
+.exchange-history-entry strong { color: var(--navy); font-size: var(--text-lg); overflow-wrap: anywhere; }
+.exchange-history-milestone { color: var(--slate); font-size: var(--text-base); overflow-wrap: anywhere; }
+.exchange-history-entry small { color: var(--muted); font-size: var(--text-sm); }
+.exchange-inline-button { padding: 0; color: inherit; text-decoration: underline; font-size: inherit; }
+
+/* Progress on the exchange cards (FE-6.1). */
+.exchange-card-progress { margin: 12px 19px 0; height: 4px; background: var(--track); border-radius: var(--radius-xs); overflow: hidden; }
+.exchange-card-progress span { display: block; height: 100%; background: var(--blue); }

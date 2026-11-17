@@ -1,5 +1,5 @@
 import type { Agreement, AgreementSigner, AgreementSummary, ExchangeTerms, SignerConsent } from '../features/agreements/agreementsApi'
-import type { Exchange, ExchangeSummary } from '../features/exchanges/exchangesApi'
+import type { Exchange, ExchangeEvent, ExchangeSummary } from '../features/exchanges/exchangesApi'
 import type { BusinessMatch, MatchBusiness } from '../features/matching/matchInboxApi'
 import type { Proposal, ProposalSummary, ProposalTerms, SentVersion } from '../features/proposals/proposalsApi'
 import { apiBusiness, apiErrorBody, apiMembership, apiUser, tokenBody, type MockHandler, type MockReply, type MockRequest } from './mockApi'
@@ -344,6 +344,7 @@ export function exchangeSummary(overrides: Partial<ExchangeSummary> = {}): Excha
     my_side: 'a',
     other_business: studio,
     milestone_count: 3,
+    milestones_accepted: 0,
     next_due_date: '2027-01-18',
     activated_at: '2026-11-20T12:00:00Z',
     created_at: '2026-11-20T12:00:00Z',
@@ -366,18 +367,58 @@ export function exchangeDetail(overrides: Partial<Exchange> = {}): Exchange {
     description: null,
     due_date: due,
     acceptance_criteria: null,
-    status: 'pending' as const,
+    status: 'pending' as Exchange['milestones'][number]['status'],
+    latest_submission: null,
+    review_due_at: null,
+    revisions_used: 0,
     ...extra,
   })
   return {
     ...exchangeSummary(),
     business_a_id: 'business-1',
     business_b_id: STUDIO_ID,
+    currency: 'USD',
+    sides: {
+      a: {
+        business_id: 'business-1',
+        services: [{ key: 's1', title: 'Brand identity sprint', description: 'Two-week sprint.', deliverables: ['Logo suite', 'Brand guide'], exclusions: ['Printing'], value_minor: 300000 }],
+        total_value_minor: 300000,
+      },
+      b: {
+        business_id: STUDIO_ID,
+        services: [{ key: 's2', title: 'Monthly bookkeeping', description: null, deliverables: ['Monthly reconciliation'], exclusions: [], value_minor: 270000 }],
+        total_value_minor: 270000,
+      },
+    },
+    review_period_days: 5,
+    revision_limit: 2,
+    cancellation_notice_days: 14,
+    cash_adjustment: { payer: 'b', payer_business_id: STUDIO_ID, amount_minor: 30000, timing: 'on_completion', note: null },
     milestones: [
       milestone(1, 'a', 'Logo concepts', '2027-01-18', { acceptance_criteria: 'Three concepts delivered as PDF' }),
       milestone(2, 'b', 'First monthly reconciliation', '2027-02-10', { description: 'January books closed.' }),
       milestone(3, 'a', 'Final brand guide', null),
     ],
+    ...overrides,
+  }
+}
+
+/** A history entry; by default the exchange's activation by BFB itself. */
+export function activationEvent(overrides: Partial<ExchangeEvent> = {}): ExchangeEvent {
+  return {
+    id: 'event-activated',
+    exchange_id: EXCHANGE_ID,
+    milestone_id: null,
+    type: 'exchange.activated',
+    actor_type: 'system',
+    actor_user_id: null,
+    actor_user_name: null,
+    actor_business_id: null,
+    actor_side: null,
+    from_status: null,
+    to_status: 'active',
+    metadata: { agreement_id: AGREEMENT_ID, milestone_count: 3 },
+    occurred_at: '2026-11-20T12:00:00Z',
     ...overrides,
   }
 }
@@ -394,6 +435,8 @@ export interface ProposalServerOptions {
   /** The business's active exchanges, and the one exchange the detail route returns. */
   exchanges?: ExchangeSummary[]
   exchange?: Exchange
+  /** The exchange's history, newest first (default: activation by BFB). */
+  history?: ExchangeEvent[]
   reply?: (request: MockRequest) => MockReply | Promise<MockReply> | undefined
 }
 
@@ -403,7 +446,7 @@ function matchesFilters(item: ProposalSummary, params: { status?: string; waitin
   return true
 }
 
-export function proposalServer({ role = 'owner', proposals = [], proposal = draftProposal(), match = acceptedMatch(), agreements = [], agreement = agreementDetail(), exchanges = [], exchange = exchangeDetail(), reply }: ProposalServerOptions = {}): MockHandler {
+export function proposalServer({ role = 'owner', proposals = [], proposal = draftProposal(), match = acceptedMatch(), agreements = [], agreement = agreementDetail(), exchanges = [], exchange = exchangeDetail(), history = [activationEvent()], reply }: ProposalServerOptions = {}): MockHandler {
   return async (request) => {
     const custom = await reply?.(request)
     if (custom) return custom
@@ -425,6 +468,7 @@ export function proposalServer({ role = 'owner', proposals = [], proposal = draf
     if (method === 'get' && url === `${AGREEMENTS}/${agreement.id}`) return { status: 200, data: agreement }
     if (method === 'get' && url === EXCHANGES) return { status: 200, data: { items: exchanges, next_cursor: null } }
     if (method === 'get' && url === `${EXCHANGES}/${exchange.id}`) return { status: 200, data: exchange }
+    if (method === 'get' && url === `${EXCHANGES}/${exchange.id}/history`) return { status: 200, data: { items: history, next_cursor: null } }
     if (method === 'get' && url === '/legal/exchange-terms') return { status: 200, data: exchangeTerms() }
     return { status: 404, data: apiErrorBody('not_found') }
   }

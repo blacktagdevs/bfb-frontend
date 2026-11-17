@@ -769,6 +769,46 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/v1/admin/exchanges/{exchange_id}/milestones/{milestone_id}/submissions": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * List Submissions
+         * @description A milestone's submissions, newest first, for staff.
+         */
+        get: operations["list_submissions_api_v1_admin_exchanges__exchange_id__milestones__milestone_id__submissions_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/admin/exchanges/{exchange_id}/milestones/{milestone_id}/submissions/{submission_id}/attachments/{upload_id}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Get Attachment
+         * @description A short-lived URL to read one of a submission's files, for staff.
+         */
+        get: operations["get_attachment_api_v1_admin_exchanges__exchange_id__milestones__milestone_id__submissions__submission_id__attachments__upload_id__get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/v1/businesses/{business_id}/uploads": {
         parameters: {
             query?: never;
@@ -780,7 +820,8 @@ export interface paths {
         put?: never;
         /**
          * Upload
-         * @description Upload a file for the business. Administrators and owners only.
+         * @description Upload a file for the business. Administrators and owners only, except
+         *     ``exchange_delivery`` files, which any member may upload (API-6.2).
          *
          *     The type and size are checked against the category's limits, and the file's
          *     contents must match its declared type.
@@ -1805,9 +1846,75 @@ export interface paths {
         };
         /**
          * Get Exchange
-         * @description One exchange with its milestones, in order.
+         * @description One exchange with its terms and milestones, in order.
          */
         get: operations["get_exchange_api_v1_businesses__business_id__exchanges__exchange_id__get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/businesses/{business_id}/exchanges/{exchange_id}/history": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Get History
+         * @description The exchange's history, newest first.
+         */
+        get: operations["get_history_api_v1_businesses__business_id__exchanges__exchange_id__history_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/businesses/{business_id}/exchanges/{exchange_id}/milestones/{milestone_id}/submissions": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * List Submissions
+         * @description The milestone's submissions, newest first. Members of either business.
+         */
+        get: operations["list_submissions_api_v1_businesses__business_id__exchanges__exchange_id__milestones__milestone_id__submissions_get"];
+        put?: never;
+        /**
+         * Submit Milestone
+         * @description Deliver a milestone with a note, links and files. Any member of the business
+         *     responsible for it, while it is ``pending`` or ``changes_requested``.
+         */
+        post: operations["submit_milestone_api_v1_businesses__business_id__exchanges__exchange_id__milestones__milestone_id__submissions_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/businesses/{business_id}/exchanges/{exchange_id}/milestones/{milestone_id}/submissions/{submission_id}/attachments/{upload_id}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Get Attachment
+         * @description A short-lived URL to read one of a submission's files. Members of either
+         *     business.
+         */
+        get: operations["get_attachment_api_v1_businesses__business_id__exchanges__exchange_id__milestones__milestone_id__submissions__submission_id__attachments__upload_id__get"];
         put?: never;
         post?: never;
         delete?: never;
@@ -2361,6 +2468,27 @@ export interface components {
             /** Notes */
             notes?: string | null;
         };
+        /** AttachmentUrlResponse */
+        AttachmentUrlResponse: {
+            /**
+             * Upload Id
+             * Format: uuid
+             */
+            upload_id: string;
+            /** Original Filename */
+            original_filename: string | null;
+            /** Content Type */
+            content_type: string;
+            /** Size Bytes */
+            size_bytes: number;
+            /** Url */
+            url: string;
+            /**
+             * Url Expires At
+             * Format: date-time
+             */
+            url_expires_at: string;
+        };
         /** Body_upload_api_v1_businesses__business_id__uploads_post */
         Body_upload_api_v1_businesses__business_id__uploads_post: {
             /**
@@ -2648,6 +2776,21 @@ export interface components {
             /** Note */
             note?: string | null;
         };
+        /** CashAdjustmentResponse */
+        CashAdjustmentResponse: {
+            payer: components["schemas"]["Side"];
+            /**
+             * Payer Business Id
+             * Format: uuid
+             */
+            payer_business_id: string;
+            /** Amount Minor */
+            amount_minor: number;
+            /** Timing */
+            timing: string;
+            /** Note */
+            note: string | null;
+        };
         /**
          * CashTiming
          * @enum {string}
@@ -2840,6 +2983,59 @@ export interface components {
         ErrorResponse: {
             error: components["schemas"]["ErrorBody"];
         };
+        /**
+         * ExchangeActorType
+         * @enum {string}
+         */
+        ExchangeActorType: "business" | "staff" | "system";
+        /**
+         * ExchangeEventResponse
+         * @description One history entry.
+         */
+        ExchangeEventResponse: {
+            /**
+             * Id
+             * Format: uuid
+             */
+            id: string;
+            /**
+             * Exchange Id
+             * Format: uuid
+             */
+            exchange_id: string;
+            /** Milestone Id */
+            milestone_id: string | null;
+            /** Type */
+            type: string;
+            actor_type: components["schemas"]["ExchangeActorType"];
+            /** Actor User Id */
+            actor_user_id: string | null;
+            /** Actor User Name */
+            actor_user_name: string | null;
+            /** Actor Business Id */
+            actor_business_id: string | null;
+            actor_side: components["schemas"]["Side"] | null;
+            /** From Status */
+            from_status: string | null;
+            /** To Status */
+            to_status: string | null;
+            /** Metadata */
+            metadata: {
+                [key: string]: unknown;
+            };
+            /**
+             * Occurred At
+             * Format: date-time
+             */
+            occurred_at: string;
+        };
+        /** ExchangeHistoryResponse */
+        ExchangeHistoryResponse: {
+            /** Items */
+            items: components["schemas"]["ExchangeEventResponse"][];
+            /** Next Cursor */
+            next_cursor: string | null;
+        };
         /** ExchangeListItem */
         ExchangeListItem: {
             /**
@@ -2867,6 +3063,8 @@ export interface components {
             other_business: components["schemas"]["MatchBusinessSummary"];
             /** Milestone Count */
             milestone_count: number;
+            /** Milestones Accepted */
+            milestones_accepted: number;
             /** Next Due Date */
             next_due_date: string | null;
             /**
@@ -2925,10 +3123,15 @@ export interface components {
             /** Acceptance Criteria */
             acceptance_criteria: string | null;
             status: components["schemas"]["MilestoneStatus"];
+            latest_submission: components["schemas"]["SubmissionResponse"] | null;
+            /** Review Due At */
+            review_due_at: string | null;
+            /** Revisions Used */
+            revisions_used: number;
         };
         /**
          * ExchangeResponse
-         * @description One exchange with its milestones, in order.
+         * @description One exchange with its terms and milestones, in order.
          */
         ExchangeResponse: {
             /**
@@ -2956,6 +3159,8 @@ export interface components {
             other_business: components["schemas"]["MatchBusinessSummary"];
             /** Milestone Count */
             milestone_count: number;
+            /** Milestones Accepted */
+            milestones_accepted: number;
             /** Next Due Date */
             next_due_date: string | null;
             /**
@@ -2983,14 +3188,59 @@ export interface components {
              * Format: uuid
              */
             business_b_id: string;
+            /** Currency */
+            currency: string;
+            sides: components["schemas"]["ExchangeSidesResponse"];
+            /** Review Period Days */
+            review_period_days: number;
+            /** Revision Limit */
+            revision_limit: number;
+            /** Cancellation Notice Days */
+            cancellation_notice_days: number;
+            cash_adjustment: components["schemas"]["CashAdjustmentResponse"] | null;
             /** Milestones */
             milestones: components["schemas"]["ExchangeMilestoneResponse"][];
+        };
+        /**
+         * ExchangeServiceResponse
+         * @description A service one side provides, as agreed.
+         */
+        ExchangeServiceResponse: {
+            /** Key */
+            key: string;
+            /** Title */
+            title: string;
+            /** Description */
+            description: string | null;
+            /** Deliverables */
+            deliverables: string[];
+            /** Exclusions */
+            exclusions: string[];
+            /** Value Minor */
+            value_minor: number;
+        };
+        /** ExchangeSideResponse */
+        ExchangeSideResponse: {
+            /**
+             * Business Id
+             * Format: uuid
+             */
+            business_id: string;
+            /** Services */
+            services: components["schemas"]["ExchangeServiceResponse"][];
+            /** Total Value Minor */
+            total_value_minor: number;
+        };
+        /** ExchangeSidesResponse */
+        ExchangeSidesResponse: {
+            a: components["schemas"]["ExchangeSideResponse"];
+            b: components["schemas"]["ExchangeSideResponse"];
         };
         /**
          * ExchangeStatus
          * @enum {string}
          */
-        ExchangeStatus: "active";
+        ExchangeStatus: "active" | "completed" | "cancelled";
         /**
          * ExchangeSummaryResponse
          * @description The exchange on an agreement detail, once signed (API-5.5).
@@ -3510,7 +3760,7 @@ export interface components {
          * MilestoneStatus
          * @enum {string}
          */
-        MilestoneStatus: "pending";
+        MilestoneStatus: "pending" | "submitted" | "changes_requested" | "accepted";
         /** MilestoneTerms */
         MilestoneTerms: {
             /** Key */
@@ -3683,6 +3933,18 @@ export interface components {
             /** Location Notes */
             location_notes?: string | null;
             urgency?: components["schemas"]["Urgency"] | null;
+        };
+        /**
+         * NewSubmissionBody
+         * @description ``POST .../milestones/{milestone_id}/submissions``.
+         */
+        NewSubmissionBody: {
+            /** Note */
+            note: string;
+            /** Links */
+            links?: components["schemas"]["SubmissionLinkBody"][];
+            /** Attachment Upload Ids */
+            attachment_upload_ids?: string[];
         };
         /** OfferCreateRequest */
         OfferCreateRequest: {
@@ -4507,6 +4769,93 @@ export interface components {
          * @enum {string}
          */
         SignerStatus: "pending" | "signed" | "declined";
+        /** SubmissionAttachmentResponse */
+        SubmissionAttachmentResponse: {
+            /**
+             * Upload Id
+             * Format: uuid
+             */
+            upload_id: string;
+            /** Original Filename */
+            original_filename: string | null;
+            /** Content Type */
+            content_type: string;
+            /** Size Bytes */
+            size_bytes: number;
+        };
+        /** SubmissionLinkBody */
+        SubmissionLinkBody: {
+            /** Url */
+            url: string;
+            /** Label */
+            label?: string | null;
+        };
+        /** SubmissionLinkResponse */
+        SubmissionLinkResponse: {
+            /** Url */
+            url: string;
+            /** Label */
+            label: string | null;
+        };
+        /** SubmissionListResponse */
+        SubmissionListResponse: {
+            /** Items */
+            items: components["schemas"]["SubmissionResponse"][];
+        };
+        /**
+         * SubmissionResponse
+         * @description One delivery of a milestone. Never changes once created.
+         */
+        SubmissionResponse: {
+            /**
+             * Id
+             * Format: uuid
+             */
+            id: string;
+            /**
+             * Exchange Id
+             * Format: uuid
+             */
+            exchange_id: string;
+            /**
+             * Milestone Id
+             * Format: uuid
+             */
+            milestone_id: string;
+            /** Number */
+            number: number;
+            /** Note */
+            note: string;
+            /** Links */
+            links: components["schemas"]["SubmissionLinkResponse"][];
+            /** Attachments */
+            attachments: components["schemas"]["SubmissionAttachmentResponse"][];
+            /** Submitted By User Id */
+            submitted_by_user_id: string | null;
+            /** Submitted By User Name */
+            submitted_by_user_name: string | null;
+            /**
+             * Submitted By Business Id
+             * Format: uuid
+             */
+            submitted_by_business_id: string;
+            /**
+             * Submitted At
+             * Format: date-time
+             */
+            submitted_at: string;
+            /** Is Revision */
+            is_revision: boolean;
+            /** Revision Number */
+            revision_number: number | null;
+            /** Beyond Revision Limit */
+            beyond_revision_limit: boolean;
+            /**
+             * Review Due At
+             * Format: date-time
+             */
+            review_due_at: string;
+        };
         /**
          * TeamMemberResponse
          * @description One person in a business, as listed on the team page.
@@ -4573,7 +4922,7 @@ export interface components {
          *     (``src/services/uploads.py``).
          * @enum {string}
          */
-        UploadCategory: "logo" | "cover" | "portfolio";
+        UploadCategory: "logo" | "cover" | "portfolio" | "exchange_delivery";
         /**
          * UploadResponse
          * @description An upload's metadata and a time-limited URL to read the file.
@@ -6897,6 +7246,126 @@ export interface operations {
             };
             /** @description `invalid_agreement_status` with `details.reason` `not_signed` */
             409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    list_submissions_api_v1_admin_exchanges__exchange_id__milestones__milestone_id__submissions_get: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                exchange_id: string;
+                milestone_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["SubmissionListResponse"];
+                };
+            };
+            /** @description `unauthorized` or `access_token_expired` */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description `forbidden`: not support or administrator */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description `not_found` */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    get_attachment_api_v1_admin_exchanges__exchange_id__milestones__milestone_id__submissions__submission_id__attachments__upload_id__get: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                exchange_id: string;
+                milestone_id: string;
+                submission_id: string;
+                upload_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["AttachmentUrlResponse"];
+                };
+            };
+            /** @description `unauthorized` or `access_token_expired` */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description `forbidden`: not support or administrator */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description `not_found` */
+            404: {
                 headers: {
                     [name: string]: unknown;
                 };
@@ -10475,6 +10944,245 @@ export interface operations {
                 };
             };
             /** @description `not_found`: no such business, the caller is not a member, or the business is not part of the exchange */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    get_history_api_v1_businesses__business_id__exchanges__exchange_id__history_get: {
+        parameters: {
+            query?: {
+                cursor?: string | null;
+                limit?: number;
+            };
+            header?: never;
+            path: {
+                exchange_id: string;
+                business_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ExchangeHistoryResponse"];
+                };
+            };
+            /** @description `invalid_cursor` */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description `unauthorized` or `access_token_expired` */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description `not_found`: no such business, the caller is not a member, or the business is not part of the exchange */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    list_submissions_api_v1_businesses__business_id__exchanges__exchange_id__milestones__milestone_id__submissions_get: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                exchange_id: string;
+                milestone_id: string;
+                business_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["SubmissionListResponse"];
+                };
+            };
+            /** @description `unauthorized` or `access_token_expired` */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description `not_found`: as for the exchange, or no such milestone in it */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    submit_milestone_api_v1_businesses__business_id__exchanges__exchange_id__milestones__milestone_id__submissions_post: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                exchange_id: string;
+                milestone_id: string;
+                business_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["NewSubmissionBody"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["SubmissionResponse"];
+                };
+            };
+            /** @description `unauthorized` or `access_token_expired` */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description `exchange_party_not_allowed`: the caller's business receives this milestone */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description `not_found`: as for the exchange, or no such milestone in it */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description `invalid_exchange_transition`: the milestone is already submitted or accepted, or the exchange is closed */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description `validation_error` or `invalid_upload` */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+        };
+    };
+    get_attachment_api_v1_businesses__business_id__exchanges__exchange_id__milestones__milestone_id__submissions__submission_id__attachments__upload_id__get: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                exchange_id: string;
+                milestone_id: string;
+                submission_id: string;
+                upload_id: string;
+                business_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["AttachmentUrlResponse"];
+                };
+            };
+            /** @description `unauthorized` or `access_token_expired` */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description `not_found`: as for the milestone, or no such submission or attachment on it */
             404: {
                 headers: {
                     [name: string]: unknown;

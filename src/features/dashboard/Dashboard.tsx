@@ -20,7 +20,8 @@ import { canEditProfile } from '../businesses/profileFields'
 import { BusinessLogo } from '../businesses/BusinessLogo'
 import { formatLocation } from '../businesses/profileLabels'
 import { useBusinessProfile } from '../businesses/useBusinessProfile'
-import { milestoneCount } from '../exchanges/exchangeCopy'
+import { progressText } from '../exchanges/exchangeCopy'
+import { ProgressBar } from '../exchanges/ProgressBar'
 import { useActiveExchanges, type ActiveExchanges } from '../exchanges/useActiveExchanges'
 import { fitBandLabel } from '../matching/fitCopy'
 import { formatMatchDate } from '../matching/matchInboxDisplay'
@@ -179,10 +180,10 @@ function ActiveExchangeList({ state, retry, openExchange, goExchanges }: { state
           <li className="active-exchange" key={exchange.id}>
             <BusinessLogo business={other} size="small" />
             <div className="active-exchange-main">
-              <div><strong>Exchange with {other.display_name}</strong><span>{milestoneCount(exchange.milestone_count)} · active since {formatMatchDate(exchange.activated_at)}</span></div>
+              <div><strong>Exchange with {other.display_name}</strong><span>{progressText(exchange.milestones_accepted, exchange.milestone_count)} · active since {formatMatchDate(exchange.activated_at)}</span></div>
               <span className="status status-progress">Active</span>
             </div>
-            <div className="exchange-progress" aria-hidden="true"><span style={{ width: '0%' }} /></div>
+            <ProgressBar accepted={exchange.milestones_accepted} count={exchange.milestone_count} className="exchange-progress" />
             <div className="exchange-footer">
               <span><CalendarDays size={14} aria-hidden="true" /> {exchange.next_due_date ? `Next due ${formatMatchDate(exchange.next_due_date)}` : 'Nothing due'}</span>
               <button type="button" onClick={() => openExchange(exchange.id)} aria-label={`View exchange with ${other.display_name}`}>View exchange <ArrowRight size={14} aria-hidden="true" /></button>
