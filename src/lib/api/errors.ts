@@ -158,6 +158,8 @@ export const API_ERROR_MESSAGES: Record<string, string> = {
   invalid_signer: 'Only an owner or administrator of the business can sign for it.',
   not_agreement_signer: 'You’re not the signer named for this business.',
   signer_confirmation_required: 'Tick both boxes to confirm before you continue.',
+  invalid_exchange_transition: 'This exchange changed since you loaded it, so nothing was changed.',
+  exchange_party_not_allowed: 'That belongs to the other business in this exchange.',
   signature_provider_unavailable: 'Signing isn’t switched on here yet, so signing can’t start. Nothing changed.',
   signature_provider_error: 'The signing service didn’t respond, so nothing changed. Try again in a moment.',
   signature_name_mismatch: 'That name doesn’t match the name you confirmed.',

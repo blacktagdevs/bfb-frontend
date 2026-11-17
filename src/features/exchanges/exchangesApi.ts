@@ -1,4 +1,4 @@
-import { apiGet } from '../../lib/api/requests'
+import { apiGet, apiPost } from '../../lib/api/requests'
 import type { components } from '../../lib/api/schema'
 
 type Schemas = components['schemas']
@@ -16,6 +16,12 @@ export type MilestoneStatus = Schemas['MilestoneStatus']
 export type ExchangeService = Schemas['ExchangeServiceResponse']
 export type ExchangeEvent = Schemas['ExchangeEventResponse']
 export type ExchangeHistoryPage = Schemas['ExchangeHistoryResponse']
+export type Submission = Schemas['SubmissionResponse']
+export type SubmissionAttachment = Schemas['SubmissionAttachmentResponse']
+export type NewSubmission = Schemas['NewSubmissionBody']
+
+/** Limits on a delivery (bfb-api docs/EXCHANGES.md, "Delivery"). The server checks again. */
+export const DELIVERY_LIMITS = { noteMax: 5000, links: 10, urlMax: 2000, labelMax: 200, files: 10 }
 
 export const EXCHANGES_PAGE_SIZE = 20
 export const HISTORY_PAGE_SIZE = 50
@@ -38,5 +44,30 @@ export function getExchangeHistory(businessId: string, exchangeId: string, curso
   return apiGet('/businesses/{business_id}/exchanges/{exchange_id}/history', {
     path: { business_id: businessId, exchange_id: exchangeId },
     query: { limit: HISTORY_PAGE_SIZE, ...(cursor ? { cursor } : {}) },
+  })
+}
+
+/**
+ * Submit a delivery for a milestone your business delivers (any member). Upload files first
+ * (category `exchange_delivery`) and pass their IDs in display order.
+ */
+export function submitDelivery(businessId: string, exchangeId: string, milestoneId: string, body: NewSubmission): Promise<Submission> {
+  return apiPost('/businesses/{business_id}/exchanges/{exchange_id}/milestones/{milestone_id}/submissions', body, {
+    path: { business_id: businessId, exchange_id: exchangeId, milestone_id: milestoneId },
+  })
+}
+
+/** Every delivery of a milestone, newest first. */
+export async function listSubmissions(businessId: string, exchangeId: string, milestoneId: string): Promise<Submission[]> {
+  const page = await apiGet('/businesses/{business_id}/exchanges/{exchange_id}/milestones/{milestone_id}/submissions', {
+    path: { business_id: businessId, exchange_id: exchangeId, milestone_id: milestoneId },
+  })
+  return page.items
+}
+
+/** A fresh short-lived link to one delivered file. Never store it. */
+export function getAttachmentUrl(businessId: string, exchangeId: string, milestoneId: string, submissionId: string, uploadId: string) {
+  return apiGet('/businesses/{business_id}/exchanges/{exchange_id}/milestones/{milestone_id}/submissions/{submission_id}/attachments/{upload_id}', {
+    path: { business_id: businessId, exchange_id: exchangeId, milestone_id: milestoneId, submission_id: submissionId, upload_id: uploadId },
   })
 }

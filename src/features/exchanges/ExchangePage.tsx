@@ -1,10 +1,10 @@
 import { useEffect, useState, type ReactNode } from 'react'
-import { ArrowLeft, CalendarDays, FileSearch, Info, Layers, PackageCheck } from 'lucide-react'
+import { ArrowLeft, CalendarDays, FileSearch, Layers, PackageCheck, RotateCcw } from 'lucide-react'
 import { Link, useParams } from 'react-router-dom'
 
 import { paths } from '../../app/router/paths'
-import { EmptyState, ErrorState, LoadingState } from '../../components/feedback'
-import { toApiError } from '../../lib/api/errors'
+import { EmptyState, ErrorState, LoadingState, showToast } from '../../components/feedback'
+import { toApiError, type ApiError } from '../../lib/api/errors'
 import { useActiveBusiness } from '../../lib/businesses/useActiveBusiness'
 import { PublicProfileLink } from '../businesses/PublicProfileLink'
 import { formatAmount } from '../listings/money'
@@ -24,7 +24,8 @@ import {
 } from './exchangeCopy'
 import { ExchangeHistory } from './ExchangeHistory'
 import { ProgressBar } from './ProgressBar'
-import { getExchange, type Exchange, type ExchangeMilestone } from './exchangesApi'
+import { getExchange, type Exchange, type ExchangeMilestone, type Submission } from './exchangesApi'
+import { MilestoneDeliveries } from './MilestoneDeliveries'
 import '../matching/MatchInbox.css'
 import '../proposals/Proposals.css'
 import '../proposals/ProposalReview.css'
@@ -45,6 +46,7 @@ function ExchangeView({ exchangeId }: { exchangeId: string }) {
   const [exchange, setExchange] = useState<Exchange | null>(null)
   const [loadError, setLoadError] = useState<unknown>(null)
   const [reloadKey, setReloadKey] = useState(0)
+  const [notice, setNotice] = useState<string | null>(null)
 
   useEffect(() => {
     let live = true
@@ -91,6 +93,22 @@ function ExchangeView({ exchangeId }: { exchangeId: string }) {
   const count = exchange.milestone_count
   const statusLabel = EXCHANGE_STATUS_LABELS[exchange.status]
 
+  const submitted = (submission: Submission) => {
+    setNotice(null)
+    const review = submission.review_due_at ? ` ${other.display_name} has until ${formatFullDate(submission.review_due_at)} to review it.` : ''
+    showToast(`${submission.is_revision ? 'Revision' : 'Delivery'} submitted.${review}`)
+    setReloadKey((key) => key + 1)
+  }
+
+  const conflict = (error: ApiError) => {
+    setNotice(
+      error.code === 'exchange_party_not_allowed'
+        ? `Only ${other.display_name} can deliver that milestone, so nothing was submitted.`
+        : 'This milestone or exchange changed since you opened it, so your delivery wasn’t submitted. The page now shows where it stands.',
+    )
+    setReloadKey((key) => key + 1)
+  }
+
   return (
     <>
       {back}
@@ -109,6 +127,7 @@ function ExchangeView({ exchangeId }: { exchangeId: string }) {
       <div className="match-layout proposal-review-layout">
         <div className="match-main">
           {/* Banner slot: completion, cancellation and dispute notices (FE-6.4, FE-6.5) go here. */}
+          {notice && <p className="match-notice match-notice-error exchange-notice" role="alert">{notice}</p>}
           <section className={`match-panel proposal-standing exchange-standing exchange-standing-${exchange.status}`} aria-labelledby="exchange-standing-title">
             <h2 id="exchange-standing-title" className="match-side-title">Where it stands</h2>
             <p>
@@ -131,13 +150,12 @@ function ExchangeView({ exchangeId }: { exchangeId: string }) {
               ) : (
                 <ol className="exchange-milestones" aria-label="Milestones">
                   {exchange.milestones.map((milestone) => (
-                    <MilestoneRow key={milestone.id} milestone={milestone} exchange={exchange} businessId={business.id} names={names} />
+                    <MilestoneRow key={milestone.id} milestone={milestone} exchange={exchange} businessId={business.id} names={names}>
+                      <MilestoneDeliveries exchange={exchange} milestone={milestone} businessId={business.id} names={names} onSubmitted={submitted} onConflict={conflict} />
+                    </MilestoneRow>
                   ))}
                 </ol>
               )}
-              <p className="exchange-readonly-note">
-                <Info size={14} aria-hidden="true" /> Submitting deliveries and reviewing them on BFB comes in a later release.
-              </p>
             </div>
           </section>
           <ProvidesSection exchange={exchange} businessId={business.id} names={names} />
@@ -192,6 +210,9 @@ export function MilestoneRow({ milestone, exchange, businessId, names, children 
           <span><PackageCheck size={14} aria-hidden="true" /> <span><strong>{delivery.mine ? 'You deliver' : 'You receive'}</strong> · {delivery.text}</span></span>
           <span><CalendarDays size={14} aria-hidden="true" /> {milestone.due_date ? `Due ${formatFullDate(milestone.due_date)}` : 'No due date'}</span>
           {service && <span><Layers size={14} aria-hidden="true" /> Part of {service.title}</span>}
+          {(milestone.revisions_used > 0 || milestone.status === 'changes_requested') && (
+            <span><RotateCcw size={14} aria-hidden="true" /> {milestone.revisions_used > exchange.revision_limit ? `Revisions used: ${milestone.revisions_used}, beyond the ${exchange.revision_limit} agreed` : `Revisions used: ${milestone.revisions_used} of ${exchange.revision_limit}`}</span>
+          )}
         </p>
         {milestone.status === 'submitted' && milestone.review_due_at && (
           <p className="exchange-milestone-review">
