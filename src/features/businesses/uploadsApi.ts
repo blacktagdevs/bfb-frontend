@@ -7,7 +7,7 @@ import { businessPath } from '../../lib/businesses/activeBusiness'
 
 export type Upload = components['schemas']['UploadResponse']
 export type ImageCategory = 'logo' | 'cover'
-export type UploadCategory = ImageCategory | 'portfolio'
+export type UploadCategory = ImageCategory | 'portfolio' | 'exchange_delivery'
 
 const IMAGE_TYPES = ['image/jpeg', 'image/png', 'image/webp'] as const
 
@@ -43,6 +43,17 @@ export function checkImageFile(category: ImageCategory, file: File): string | nu
   return null
 }
 
+/** Files delivered for an exchange milestone: images or a PDF, up to 15 MB (bfb-api docs/EXCHANGES.md, "Files"). */
+export const DELIVERY_UPLOAD_LIMITS = PORTFOLIO_UPLOAD_LIMITS
+
+/** Why `file` can't be delivered for a milestone, or `null` if it can. Checked before uploading. */
+export function checkDeliveryFile(file: File): string | null {
+  if (!DELIVERY_UPLOAD_LIMITS.types.includes(fileType(file))) return `${file.name}: choose a JPEG, PNG or WebP image, or a PDF. Share other formats as a link.`
+  if (file.size === 0) return `${file.name} is empty. Choose another file.`
+  if (file.size > DELIVERY_UPLOAD_LIMITS.maxBytes) return `${file.name} is larger than ${formatMegabytes(DELIVERY_UPLOAD_LIMITS.maxBytes)}. Share it as a link instead.`
+  return null
+}
+
 /** Why `file` can't be a portfolio work sample, or `null` if it can. Checked before uploading. */
 export function checkPortfolioFile(file: File): string | null {
   if (!PORTFOLIO_UPLOAD_LIMITS.types.includes(fileType(file))) return 'Choose a JPEG, PNG or WebP image, or a PDF.'
@@ -52,8 +63,8 @@ export function checkPortfolioFile(file: File): string | null {
 }
 
 /**
- * Upload a file for the business (owners and administrators): a logo, a cover or a portfolio
- * work sample. Resolves with the upload, whose `id` the record stores and whose `url` is a
+ * Upload a file for the business: a logo, a cover or a portfolio work sample (owners and
+ * administrators), or a milestone delivery (any member). Resolves with the upload, whose `id` the record stores and whose `url` is a
  * short-lived preview link.
  */
 export async function uploadFile(

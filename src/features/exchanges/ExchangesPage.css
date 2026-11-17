@@ -97,3 +97,52 @@ ul.exchange-page-list { list-style: none; margin: 0; padding: 0; }
 /* Progress on the exchange cards (FE-6.1). */
 .exchange-card-progress { margin: 12px 19px 0; height: 4px; background: var(--track); border-radius: var(--radius-xs); overflow: hidden; }
 .exchange-card-progress span { display: block; height: 100%; background: var(--blue); }
+
+/* Deliveries (FE-6.2): the submit button, the delivery form and each submission. */
+.exchange-notice { margin: 0; }
+.exchange-milestone-cta { display: flex; flex-wrap: wrap; align-items: center; gap: 6px 12px; }
+.exchange-milestone-cta span { color: var(--muted); font-size: var(--text-sm); }
+.exchange-icon-button { width: 28px; height: 28px; border: 1px solid var(--border); background: white; color: var(--muted); border-radius: 6px; display: grid; place-items: center; padding: 0; cursor: pointer; flex-shrink: 0; }
+.exchange-icon-button:hover:not(:disabled) { color: var(--navy); border-color: #b7c8da; }
+.exchange-icon-button:disabled { opacity: .4; cursor: default; }
+.exchange-upload-progress { display: block; height: 5px; background: var(--track); border-radius: var(--radius-xs); overflow: hidden; margin-top: 4px; }
+.exchange-upload-progress span { display: block; height: 100%; background: var(--blue); transition: width .2s ease; }
+
+.exchange-delivery-form { display: flex; flex-direction: column; gap: 12px; background: var(--surface-muted); border: 1px solid var(--border); border-radius: var(--radius-md); padding: 14px; }
+.exchange-delivery-form h4 { margin: 0; color: var(--navy); font-size: var(--text-lg); }
+.exchange-milestone .exchange-delivery-form p.exchange-delivery-intro { color: var(--muted); font-size: var(--text-base); }
+.exchange-delivery-form .form-field { margin: 0; }
+.exchange-delivery-form .match-notice { margin: 0; }
+.exchange-delivery-group { border: 0; margin: 0; padding: 0; display: flex; flex-direction: column; align-items: flex-start; gap: 8px; min-width: 0; }
+.exchange-delivery-group legend { padding: 0; margin-bottom: 6px; color: var(--navy); font-size: var(--text-base); font-weight: 700; }
+.exchange-delivery-group legend span { color: var(--text-subtle); font-weight: 600; margin-left: 6px; }
+.exchange-delivery-group .form-field-hint { margin: 0; }
+.exchange-delivery-link { width: 100%; display: grid; grid-template-columns: 1.4fr 1fr 28px; gap: 8px; align-items: end; }
+.exchange-delivery-link .exchange-delivery-remove { margin-bottom: 8px; }
+.exchange-delivery-files { list-style: none; margin: 0; padding: 0; width: 100%; display: flex; flex-direction: column; gap: 6px; }
+.exchange-delivery-file { display: flex; align-items: center; gap: 10px; background: white; border: 1px solid var(--border); border-radius: var(--radius-md); padding: 8px 10px; color: var(--blue); }
+.exchange-delivery-file-failed { border-color: #efcbd0; color: #a8323f; }
+.exchange-delivery-file-name { flex: 1; min-width: 0; display: flex; flex-direction: column; }
+.exchange-delivery-file-name strong { color: var(--navy); font-size: var(--text-base); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.exchange-delivery-file-name small { color: var(--muted); font-size: var(--text-sm); }
+.exchange-delivery-file-failed .exchange-delivery-file-name small { color: #a8323f; }
+.exchange-delivery-actions { display: flex; justify-content: flex-end; gap: 8px; }
+
+.exchange-deliveries { display: flex; flex-direction: column; align-items: flex-start; gap: 8px; }
+.exchange-submission { width: 100%; box-sizing: border-box; border: 1px solid var(--border); border-left: 3px solid var(--blue); border-radius: var(--radius-md); padding: 11px 13px; display: flex; flex-direction: column; gap: 7px; background: white; }
+.exchange-submission header { display: flex; flex-wrap: wrap; justify-content: space-between; gap: 2px 12px; }
+.exchange-submission header strong { color: var(--navy); font-size: var(--text-base); }
+.exchange-submission header small { color: var(--muted); font-size: var(--text-sm); }
+.exchange-milestone p.exchange-submission-note { white-space: pre-wrap; }
+.exchange-submission-links, .exchange-submission-files { list-style: none; margin: 0; padding: 0; display: flex; flex-wrap: wrap; gap: 6px 14px; }
+.exchange-submission-links a { display: inline-flex; align-items: center; gap: 5px; color: var(--blue); font-size: var(--text-base); font-weight: 600; overflow-wrap: anywhere; }
+.exchange-submission-files .button { gap: 6px; }
+.exchange-submission-files .button small { color: var(--text-subtle); font-weight: 600; }
+.exchange-milestone p.exchange-revision-note { background: var(--surface-muted); border: 1px solid var(--border); border-radius: var(--radius-sm); padding: 7px 10px; color: var(--slate); font-size: var(--text-base); }
+.exchange-earlier-button { padding: 0; color: var(--blue); font-size: var(--text-base); font-weight: 700; }
+
+@media (max-width: 620px) {
+  .exchange-delivery-link { grid-template-columns: 1fr 28px; }
+  .exchange-delivery-link > .form-field:nth-child(2) { grid-column: 1; }
+  .exchange-delivery-link .exchange-delivery-remove { grid-column: 2; grid-row: 1; }
+}

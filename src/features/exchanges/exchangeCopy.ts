@@ -1,5 +1,5 @@
 import { formatMatchDate } from '../matching/matchInboxDisplay'
-import type { Exchange, ExchangeEvent, ExchangeMilestone, ExchangeStatus, MilestoneStatus } from './exchangesApi'
+import type { Exchange, ExchangeEvent, ExchangeMilestone, ExchangeStatus, MilestoneStatus, Submission } from './exchangesApi'
 
 // Copy for exchanges: the one place that turns exchange codes into words.
 
@@ -148,4 +148,30 @@ export function historyActor(entry: ExchangeEvent, myBusinessId: string, names: 
   if (entry.actor_type === 'staff') return entry.actor_user_name ? `${entry.actor_user_name}, BFB staff` : 'BFB staff'
   const business = entry.actor_business_id === myBusinessId ? names.mine : names.other
   return `${entry.actor_user_name ?? 'A former team member'} (${business})`
+}
+
+/** "Delivery 1", "Revision 1 of 2", "Revision 3 (beyond the 2 agreed)". */
+export function submissionLabel(submission: Pick<Submission, 'number' | 'is_revision' | 'revision_number' | 'beyond_revision_limit'>, revisionLimit: number): string {
+  if (!submission.is_revision || submission.revision_number === null) return `Delivery ${submission.number}`
+  return submission.beyond_revision_limit
+    ? `Revision ${submission.revision_number} (beyond the ${revisionLimit} agreed)`
+    : `Revision ${submission.revision_number} of ${revisionLimit}`
+}
+
+/** "No rounds of changes are included", "1 round of changes", "2 rounds of changes". */
+export function revisionsIncluded(limit: number): string {
+  if (limit === 0) return 'no rounds of changes'
+  return limit === 1 ? '1 round of changes' : `${limit} rounds of changes`
+}
+
+/** "482 KB", "1.2 MB". */
+export function formatBytes(bytes: number): string {
+  if (bytes < 1024) return `${bytes} bytes`
+  if (bytes < 1024 * 1024) return `${Math.round(bytes / 1024)} KB`
+  return `${(bytes / (1024 * 1024)).toFixed(1)} MB`
+}
+
+/** Whether your business can submit a delivery for the milestone now (any member). */
+export function canDeliver(exchange: Exchange, milestone: ExchangeMilestone, businessId: string): boolean {
+  return exchange.status === 'active' && milestone.responsible_business_id === businessId && (milestone.status === 'pending' || milestone.status === 'changes_requested')
 }

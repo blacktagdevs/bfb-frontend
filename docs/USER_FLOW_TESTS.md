@@ -4,7 +4,7 @@ Manual, end-to-end checks of everything built so far, through the start of Phase
 
 Each flow lists steps and what should happen. Tick a row when it passes. When one fails, note the flow number, the step, and what you saw, then file it or hand it to an agent.
 
-Last updated: 17 November 2026 (FE-6.1, exchange workspace).
+Last updated: 17 November 2026 (FE-6.2, delivering milestones).
 
 ## Setup
 
@@ -282,6 +282,14 @@ Use the agreement both businesses signed in 15.21.
 | 16.9 | Read "What each business provides" | Both businesses' services from the accepted proposal, yours first, with values, deliverables and "Not included", each side's total, and the cash adjustment as agreed (or "No cash changes hands.") | [ ] |
 | 16.10 | Read History | "Exchange started: both businesses signed the agreement" by BFB, with the date and time it became active. More entries appear as milestones are delivered (flow 16.11 on) | [ ] |
 | 16.11 | After a milestone is accepted (FE-6.3), open `/exchanges` and the dashboard | The card says "3 milestones, 1 accepted" and its bar is a third full; the dashboard row says "1 of 3 milestones accepted" with the same bar | [ ] |
+| 16.12 | As the business that delivers milestone 1, press "Submit delivery" on it and then "Submit delivery" in the form without writing anything | The form opens inside the milestone; "Write a note on what you delivered." under the note and nothing is sent | [ ] |
+| 16.13 | Write a note, add a link with a label, add a PDF and an image, and try a `.zip` | The two files upload with a progress bar and read "uploaded"; the `.zip` is refused in red, naming the formats; "Files 3 of 10". Remove the `.zip` | [ ] |
+| 16.14 | Press "Submit delivery" | Toast "Delivery submitted. <Other business> has until <date> to review it."; the milestone is "Submitted" with "Delivery 1", your name and the time, the note, the link and both files; History adds "Delivery submitted" for Milestone 1 by you. No "Submit delivery" on it any more | [ ] |
+| 16.15 | Open the exchange as the other business | Milestone 1 shows the same delivery with "Review it by …", no submit button, and a line that accepting or asking for changes comes later. Press each file: a new tab opens the file; press again and it opens again (a fresh link each time) | [ ] |
+| 16.16 | As a member (not an owner or administrator) of the delivering business, deliver milestone 3 | Allowed, the same as 16.12 to 16.14 | [ ] |
+| 16.17 | After the other business asks for changes on milestone 1 (FE-6.3) | Milestone 1 reads "Changes requested" and "Revisions used: 0 of 2"; the button says "Submit revision"; the form is headed "Revision 1 of 2". Submitting shows "Revision 1 of 2" above "Show the earlier delivery", which adds "Delivery 1" | [ ] |
+| 16.18 | Ask for changes again past the revision limit, then resubmit | The form says the agreement doesn't require this revision but you can still submit; the delivery is labelled "Revision 3 (beyond the 2 agreed)" with the same neutral note | [ ] |
+| 16.19 | Repeat 16.12 to 16.14 at phone width (about 390 px) | The link fields stack, no sideways scrolling | [ ] |
 
 ## 17. Across the app
 
