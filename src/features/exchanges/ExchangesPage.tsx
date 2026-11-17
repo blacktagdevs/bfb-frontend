@@ -9,7 +9,7 @@ import { useActiveBusiness } from '../../lib/businesses/useActiveBusiness'
 import { BusinessLogo } from '../businesses/BusinessLogo'
 import { formatLocation } from '../businesses/profileLabels'
 import { formatMatchDate } from '../matching/matchInboxDisplay'
-import { EXCHANGE_STATUS_LABELS, milestoneCount } from './exchangeCopy'
+import { closedAt, EXCHANGE_STATUS_LABELS, milestoneCount } from './exchangeCopy'
 import { ProgressBar } from './ProgressBar'
 import { listExchanges, type ExchangeStatus, type ExchangeSummary } from './exchangesApi'
 import './ExchangesPage.css'
@@ -141,8 +141,8 @@ function ExchangeCard({ exchange }: { exchange: ExchangeSummary }) {
   const location = formatLocation(other)
   const completed = exchange.status === 'completed'
   const cancelled = exchange.status === 'cancelled'
-  // The list has no completion or cancellation date yet; a closed exchange's last update is when it closed.
-  const closedOn = formatMatchDate(exchange.updated_at)
+  const closed = closedAt(exchange)
+  const closedOn = closed ? formatMatchDate(closed) : ''
   return (
     <li className="exchange-page-card">
       <div className="exchange-card-business">

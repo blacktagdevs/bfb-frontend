@@ -5,6 +5,7 @@ import { TextareaField } from '../../components/forms'
 import { toApiError, type ApiError } from '../../lib/api/errors'
 import { formatFullDate } from '../proposals/proposalCopy'
 import {
+  acceptOwnershipText,
   canRemind,
   canReviewMilestone,
   formatDateTime,
@@ -295,7 +296,7 @@ function AcceptDeliveryDialog({ exchange, milestone, submission, businessId, nam
             {milestone.acceptance_criteria && <div><dt>Done when</dt><dd>{milestone.acceptance_criteria}</dd></div>}
           </dl>
           <p className="match-dialog-intro" id={bodyId}>
-            Accepting confirms the delivery meets “Done when”. It’s final and has effects under the agreement: the milestone counts as delivered by {names.other}, and the agreement’s terms on who owns or may use the work apply to it, for example ownership passing to {names.mine} once both businesses have given what they owe (Exchange Terms 6.2).
+            Accepting confirms the delivery meets “Done when”. It’s final and has effects under the agreement: the milestone counts as delivered by {names.other}. {acceptOwnershipText(exchange, names)}
           </p>
           {error && <p className="match-notice match-notice-error" role="alert">{error}</p>}
         </div>

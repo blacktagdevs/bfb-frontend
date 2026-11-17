@@ -3403,7 +3403,7 @@ export interface components {
          * CancellationStatus
          * @enum {string}
          */
-        CancellationStatus: "pending" | "withdrawn" | "agreed" | "effective";
+        CancellationStatus: "pending" | "withdrawn" | "agreed" | "effective" | "superseded";
         /**
          * CandidatePair
          * @description One offer meeting one need, live values. ``offer.business_id`` is the provider.
@@ -3913,6 +3913,10 @@ export interface components {
              * Format: date-time
              */
             activated_at: string;
+            /** Completed At */
+            completed_at: string | null;
+            /** Cancelled At */
+            cancelled_at: string | null;
             /**
              * Created At
              * Format: date-time
@@ -4013,6 +4017,10 @@ export interface components {
              * Format: date-time
              */
             activated_at: string;
+            /** Completed At */
+            completed_at: string | null;
+            /** Cancelled At */
+            cancelled_at: string | null;
             /**
              * Created At
              * Format: date-time
@@ -4043,10 +4051,16 @@ export interface components {
             /** Cancellation Notice Days */
             cancellation_notice_days: number;
             cash_adjustment: components["schemas"]["CashAdjustmentResponse"] | null;
+            ip_terms: components["schemas"]["IpTerms"] | null;
+            /** Ip Terms Label */
+            ip_terms_label: string | null;
+            /** Confidentiality */
+            confidentiality: boolean;
             /** Milestones */
             milestones: components["schemas"]["ExchangeMilestoneResponse"][];
             completion: components["schemas"]["ExchangeCompletionResponse"];
             cancellation_notice?: components["schemas"]["CancellationNoticeResponse"] | null;
+            cancellation?: components["schemas"]["CancellationNoticeResponse"] | null;
             open_dispute?: components["schemas"]["DisputeResponse"] | null;
         };
         /**

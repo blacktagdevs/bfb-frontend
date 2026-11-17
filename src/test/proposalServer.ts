@@ -347,6 +347,8 @@ export function exchangeSummary(overrides: Partial<ExchangeSummary> = {}): Excha
     milestones_accepted: 0,
     next_due_date: '2027-01-18',
     activated_at: '2026-11-20T12:00:00Z',
+    completed_at: null,
+    cancelled_at: null,
     created_at: '2026-11-20T12:00:00Z',
     updated_at: '2026-11-20T12:00:00Z',
     ...overrides,
@@ -396,6 +398,9 @@ export function exchangeDetail(overrides: Partial<Exchange> = {}): Exchange {
     revision_limit: 2,
     cancellation_notice_days: 14,
     cash_adjustment: { payer: 'b', payer_business_id: STUDIO_ID, amount_minor: 30000, timing: 'on_completion', note: null },
+    ip_terms: 'transfer_on_payment_and_completion',
+    ip_terms_label: 'Transfer on payment and completion',
+    confidentiality: true,
     milestones: [
       milestone(1, 'a', 'Logo concepts', '2027-01-18', { acceptance_criteria: 'Three concepts delivered as PDF' }),
       milestone(2, 'b', 'First monthly reconciliation', '2027-02-10', { description: 'January books closed.' }),
