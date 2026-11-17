@@ -10,6 +10,7 @@ import { BusinessLogo } from '../businesses/BusinessLogo'
 import { formatLocation } from '../businesses/profileLabels'
 import { formatMatchDate } from '../matching/matchInboxDisplay'
 import { EXCHANGE_STATUS_LABELS, milestoneCount } from './exchangeCopy'
+import { ProgressBar } from './ProgressBar'
 import { listActiveExchanges, type ExchangeSummary } from './exchangesApi'
 import './ExchangesPage.css'
 
@@ -125,11 +126,12 @@ function ExchangeCard({ exchange }: { exchange: ExchangeSummary }) {
         <span className="status status-progress">{EXCHANGE_STATUS_LABELS[exchange.status]}</span>
       </div>
       <dl className="exchange-trade-summary exchange-facts">
-        <div><dt>MILESTONES</dt><dd>{milestoneCount(exchange.milestone_count)}</dd></div>
+        <div><dt>MILESTONES</dt><dd>{milestoneCount(exchange.milestone_count)}, {exchange.milestones_accepted} accepted</dd></div>
         <div><dt>NEXT DUE</dt><dd>{exchange.next_due_date ? formatMatchDate(exchange.next_due_date) : 'Nothing due'}</dd></div>
         <div><dt>ACTIVE SINCE</dt><dd>{formatMatchDate(exchange.activated_at)}</dd></div>
         <div><dt>AGREEMENT</dt><dd>Signed by both</dd></div>
       </dl>
+      <ProgressBar accepted={exchange.milestones_accepted} count={exchange.milestone_count} className="exchange-card-progress" />
       <div className="exchange-card-actions">
         <Link className="button button-secondary" to={paths.agreement(exchange.agreement_id)}>Signed agreement</Link>
         <Link className="button button-primary" to={paths.exchange(exchange.id)} aria-label={`View exchange with ${other.display_name}`}>View details <ArrowRight size={15} aria-hidden="true" /></Link>

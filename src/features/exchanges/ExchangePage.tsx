@@ -1,5 +1,5 @@
-import { useEffect, useState } from 'react'
-import { ArrowLeft, CalendarDays, FileSearch, Info, PackageCheck } from 'lucide-react'
+import { useEffect, useState, type ReactNode } from 'react'
+import { ArrowLeft, CalendarDays, FileSearch, Info, Layers, PackageCheck } from 'lucide-react'
 import { Link, useParams } from 'react-router-dom'
 
 import { paths } from '../../app/router/paths'
@@ -7,10 +7,23 @@ import { EmptyState, ErrorState, LoadingState } from '../../components/feedback'
 import { toApiError } from '../../lib/api/errors'
 import { useActiveBusiness } from '../../lib/businesses/useActiveBusiness'
 import { PublicProfileLink } from '../businesses/PublicProfileLink'
+import { formatAmount } from '../listings/money'
 import { MatchBusinessHeader } from '../matching/MatchCard'
 import { formatMatchDate } from '../matching/matchInboxDisplay'
-import { formatFullDate } from '../proposals/proposalCopy'
-import { deliveryLine, EXCHANGE_STATUS_LABELS, MILESTONE_STATUS_LABELS, milestoneCount } from './exchangeCopy'
+import { ServiceItem } from '../proposals/ProposalDocument'
+import { CASH_TIMING_LABELS, days, formatFullDate } from '../proposals/proposalCopy'
+import { canManageTeam } from '../team/teamPermissions'
+import {
+  deliveryLine,
+  EXCHANGE_STATUS_LABELS,
+  MILESTONE_STATUS_LABELS,
+  milestoneCount,
+  nextStepText,
+  progressText,
+  type Names,
+} from './exchangeCopy'
+import { ExchangeHistory } from './ExchangeHistory'
+import { ProgressBar } from './ProgressBar'
 import { getExchange, type Exchange, type ExchangeMilestone } from './exchangesApi'
 import '../matching/MatchInbox.css'
 import '../proposals/Proposals.css'
@@ -18,8 +31,9 @@ import '../proposals/ProposalReview.css'
 import './ExchangesPage.css'
 
 /**
- * `/exchanges/:id`: an active exchange and its milestones, each with who delivers it, its due
- * date and what counts as done. Read-only until delivery (Phase 6).
+ * `/exchanges/:id`: the exchange workspace. Where it stands and your next step, the milestones
+ * with their statuses, what each business provides, and the full history. Both businesses see
+ * the same exchange; delivery, review, completion and cancellation build on this page.
  */
 export function ExchangePage() {
   const { exchangeId = '' } = useParams()
@@ -71,8 +85,11 @@ function ExchangeView({ exchangeId }: { exchangeId: string }) {
   }
 
   const other = exchange.other_business
-  const names = { mine: business.name, other: other.display_name }
+  const names: Names = { mine: business.name, other: other.display_name }
   const mine = exchange.milestones.filter((milestone) => milestone.responsible_business_id === business.id).length
+  const accepted = exchange.milestones_accepted
+  const count = exchange.milestone_count
+  const statusLabel = EXCHANGE_STATUS_LABELS[exchange.status]
 
   return (
     <>
@@ -85,16 +102,22 @@ function ExchangeView({ exchangeId }: { exchangeId: string }) {
         </div>
         <div>
           <div className="match-card-pills">
-            <span className={`match-pill exchange-pill-${exchange.status}`}>{EXCHANGE_STATUS_LABELS[exchange.status]}</span>
+            <span className={`match-pill exchange-pill-${exchange.status}`}>{statusLabel}</span>
           </div>
         </div>
       </div>
       <div className="match-layout proposal-review-layout">
         <div className="match-main">
-          <section className="match-panel proposal-standing exchange-standing" aria-labelledby="exchange-standing-title">
+          {/* Banner slot: completion, cancellation and dispute notices (FE-6.4, FE-6.5) go here. */}
+          <section className={`match-panel proposal-standing exchange-standing exchange-standing-${exchange.status}`} aria-labelledby="exchange-standing-title">
             <h2 id="exchange-standing-title" className="match-side-title">Where it stands</h2>
             <p>
-              Both businesses signed the agreement, so the exchange is active. {business.name} delivers {milestoneCount(mine)} and {other.display_name} delivers {milestoneCount(exchange.milestones.length - mine)}, each by its due date.
+              {exchange.status === 'active' ? 'Both businesses signed the agreement, so the exchange is active. ' : `The exchange is ${statusLabel.toLowerCase()}. `}
+              {business.name} delivers {milestoneCount(mine)} and {other.display_name} delivers {milestoneCount(exchange.milestones.length - mine)}. {progressText(accepted, count)}.
+            </p>
+            <ProgressBar accepted={accepted} count={count} className="exchange-progress-bar" />
+            <p className="exchange-next-step">
+              <strong>Next step for {business.name}:</strong> {nextStepText(exchange, business.id, names, { canReview: canManageTeam(business.role) })}
             </p>
           </section>
           <section className="match-panel" aria-labelledby="exchange-milestones-title">
@@ -108,24 +131,29 @@ function ExchangeView({ exchangeId }: { exchangeId: string }) {
               ) : (
                 <ol className="exchange-milestones" aria-label="Milestones">
                   {exchange.milestones.map((milestone) => (
-                    <MilestoneRow key={milestone.id} milestone={milestone} businessId={business.id} names={names} />
+                    <MilestoneRow key={milestone.id} milestone={milestone} exchange={exchange} businessId={business.id} names={names} />
                   ))}
                 </ol>
               )}
               <p className="exchange-readonly-note">
-                <Info size={14} aria-hidden="true" /> Milestones are read-only for now. Marking work delivered and accepting it comes in a later release.
+                <Info size={14} aria-hidden="true" /> Submitting deliveries and reviewing them on BFB comes in a later release.
               </p>
             </div>
           </section>
+          <ProvidesSection exchange={exchange} businessId={business.id} names={names} />
+          <ExchangeHistory exchange={exchange} businessId={business.id} names={names} reloadKey={reloadKey} />
         </div>
         <aside className="match-side">
           <section className="match-panel match-panel-body" aria-labelledby="exchange-status-title">
             <h2 id="exchange-status-title" className="match-side-title">Status</h2>
             <dl className="match-status-facts">
-              <div><dt>Status</dt><dd>{EXCHANGE_STATUS_LABELS[exchange.status]}</dd></div>
+              <div><dt>Status</dt><dd>{statusLabel}</dd></div>
               <div><dt>Active since</dt><dd>{formatMatchDate(exchange.activated_at)}</dd></div>
+              <div><dt>Progress</dt><dd>{progressText(accepted, count)}</dd></div>
               <div><dt>Next due</dt><dd>{exchange.next_due_date ? formatMatchDate(exchange.next_due_date) : 'Nothing due'}</dd></div>
-              <div><dt>Milestones</dt><dd>{exchange.milestone_count}</dd></div>
+              <div><dt>Review period</dt><dd>{days(exchange.review_period_days)}</dd></div>
+              <div><dt>Revisions</dt><dd>{exchange.revision_limit === 0 ? 'None included' : `Up to ${exchange.revision_limit}`}</dd></div>
+              <div><dt>Cancellation</dt><dd>{exchange.cancellation_notice_days === 0 ? 'No notice' : `${days(exchange.cancellation_notice_days)}’ notice`}</dd></div>
               <div><dt>Agreement</dt><dd><Link to={paths.agreement(exchange.agreement_id)}>Signed</Link></dd></div>
               <div><dt>Proposal</dt><dd><Link to={paths.proposal(exchange.proposal_id)}>Accepted</Link></dd></div>
             </dl>
@@ -141,23 +169,91 @@ function ExchangeView({ exchangeId }: { exchangeId: string }) {
   )
 }
 
-function MilestoneRow({ milestone, businessId, names }: { milestone: ExchangeMilestone; businessId: string; names: { mine: string; other: string } }) {
+/** One milestone: number, title, status, who delivers to whom, dates, and an area for its actions. */
+export function MilestoneRow({ milestone, exchange, businessId, names, children }: {
+  milestone: ExchangeMilestone
+  exchange: Exchange
+  businessId: string
+  names: Names
+  /** The milestone's actions and deliveries (FE-6.2 onwards). */
+  children?: ReactNode
+}) {
   const delivery = deliveryLine(milestone, businessId, names)
+  const service = milestone.service_key ? exchange.sides[milestone.responsible_side].services.find((item) => item.key === milestone.service_key) : undefined
   return (
-    <li className={`exchange-milestone ${delivery.mine ? 'exchange-milestone-mine' : ''}`}>
+    <li className={`exchange-milestone ${delivery.mine ? 'exchange-milestone-mine' : ''}`} aria-label={`Milestone ${milestone.sequence}: ${milestone.title}`}>
       <span className="exchange-milestone-number" aria-hidden="true">{milestone.sequence}</span>
       <div className="exchange-milestone-body">
         <div className="exchange-milestone-head">
           <h3>{milestone.title}</h3>
-          <span className="match-pill">{MILESTONE_STATUS_LABELS[milestone.status]}</span>
+          <span className={`match-pill exchange-milestone-pill-${milestone.status}`}>{MILESTONE_STATUS_LABELS[milestone.status]}</span>
         </div>
         <p className="exchange-milestone-meta">
           <span><PackageCheck size={14} aria-hidden="true" /> <span><strong>{delivery.mine ? 'You deliver' : 'You receive'}</strong> · {delivery.text}</span></span>
           <span><CalendarDays size={14} aria-hidden="true" /> {milestone.due_date ? `Due ${formatFullDate(milestone.due_date)}` : 'No due date'}</span>
+          {service && <span><Layers size={14} aria-hidden="true" /> Part of {service.title}</span>}
         </p>
+        {milestone.status === 'submitted' && milestone.review_due_at && (
+          <p className="exchange-milestone-review">
+            {delivery.mine ? `${names.other} reviews it by ${formatFullDate(milestone.review_due_at)}.` : `Review it by ${formatFullDate(milestone.review_due_at)}.`}
+          </p>
+        )}
         {milestone.description && <p>{milestone.description}</p>}
         {milestone.acceptance_criteria && <p className="exchange-milestone-criteria"><strong>Done when:</strong> {milestone.acceptance_criteria}</p>}
+        {children ? <div className="exchange-milestone-actions">{children}</div> : null}
       </div>
     </li>
+  )
+}
+
+function cashTiming(timing: string): string {
+  const label = (CASH_TIMING_LABELS as Record<string, string | undefined>)[timing]
+  return label ? ` ${label.toLowerCase()}` : ''
+}
+
+/** "What each business provides": both businesses' services with values (yours first), the totals and the cash adjustment. */
+function ProvidesSection({ exchange, businessId, names }: { exchange: Exchange; businessId: string; names: Names }) {
+  const mySide = exchange.my_side
+  const otherSide = mySide === 'a' ? 'b' : 'a'
+  const money = (minor: number) => formatAmount(minor, exchange.currency)
+  const nameOf = (side: 'a' | 'b') => (exchange.sides[side].business_id === businessId ? names.mine : names.other)
+  const cash = exchange.cash_adjustment
+
+  return (
+    <section className="match-panel" aria-labelledby="exchange-provides-title">
+      <div className="match-panel-head">
+        <h2 id="exchange-provides-title">What each business provides</h2>
+        <p>The services and values in the signed agreement.</p>
+      </div>
+      <div className="match-panel-body exchange-provides">
+        <div className="proposal-doc-sides">
+          {([mySide, otherSide] as const).map((side) => {
+            const terms = exchange.sides[side]
+            return (
+              <div key={side} className="proposal-doc-side" role="group" aria-label={`${nameOf(side)} provides`}>
+                <h3 className="exchange-provides-title">{nameOf(side)} provides</h3>
+                {terms.services.length === 0 ? (
+                  <p className="exchange-readonly-note">No services listed.</p>
+                ) : (
+                  <ul className="proposal-doc-services">
+                    {terms.services.map((service) => <ServiceItem key={service.key} service={service} money={money} />)}
+                  </ul>
+                )}
+                <p className="proposal-doc-total"><span>Total value</span><strong>{money(terms.total_value_minor)}</strong></p>
+              </div>
+            )
+          })}
+        </div>
+        <p className="proposal-doc-difference">
+          {cash ? (
+            <>
+              Cash adjustment: <strong>{nameOf(cash.payer)} pays {nameOf(cash.payer === 'a' ? 'b' : 'a')} {money(cash.amount_minor)}</strong>
+              {cashTiming(cash.timing)}.{cash.note ? ` ${cash.note}` : ''}
+            </>
+          ) : 'No cash changes hands.'}
+        </p>
+        <small className="proposal-values-foot">The values each business entered. BFB doesn’t move money or score the trade.</small>
+      </div>
+    </section>
   )
 }

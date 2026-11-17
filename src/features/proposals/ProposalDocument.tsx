@@ -79,7 +79,8 @@ export function ProposalDocument({ version, names, mySide }: { version: SentVers
   )
 }
 
-function ServiceItem({ service, money }: { service: DraftService; money: (minor: number) => string }) {
+/** One service as a card: title, value, description, deliverables and what is not included. */
+export function ServiceItem({ service, money }: { service: Pick<DraftService, 'title' | 'description' | 'deliverables' | 'exclusions' | 'value_minor'>; money: (minor: number) => string }) {
   return (
     <li className="proposal-doc-service">
       <div className="proposal-doc-service-head">
