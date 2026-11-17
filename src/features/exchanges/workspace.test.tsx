@@ -91,7 +91,7 @@ describe('exchange workspace copy', () => {
     expect(next(toReview, false)).toMatch(/ask for changes\. An owner or administrator of Northstar Digital does this\.$/)
     expect(next(withMilestones([{ status: 'submitted', review_due_at: '2027-01-23T10:00:00Z' }, {}, { status: 'accepted' }]))).toBe('Nothing for you to do now. Northside Studio needs to review “Logo concepts”, due by 23 Jan 2027.')
     expect(next(withMilestones([{ status: 'accepted' }, {}, { status: 'accepted' }]))).toBe('Nothing for you to do now. Northside Studio delivers “First monthly reconciliation” next, due 10 Feb 2027.')
-    expect(next(withMilestones([{ status: 'accepted' }, { status: 'accepted' }, { status: 'accepted' }]))).toBe('Every milestone is accepted. Completing the exchange comes next.')
+    expect(next(withMilestones([{ status: 'accepted' }, { status: 'accepted' }, { status: 'accepted' }]))).toBe('Every milestone is accepted. Mark the exchange complete; Northside Studio then confirms it.')
     expect(next(exchangeDetail({ status: 'completed' }))).toBe('The exchange is complete. There is nothing more to do.')
   })
 

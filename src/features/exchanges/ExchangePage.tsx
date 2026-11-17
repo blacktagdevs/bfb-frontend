@@ -22,9 +22,10 @@ import {
   nextStepText,
   progressText,
   reviewOverdue,
-  type MilestoneAction,
+  type ExchangeAction,
   type Names,
 } from './exchangeCopy'
+import { CompletionPanel } from './CompletionPanel'
 import { ExchangeHistory } from './ExchangeHistory'
 import { ProgressBar } from './ProgressBar'
 import { getExchange, type Exchange, type ExchangeMilestone, type Submission } from './exchangesApi'
@@ -109,7 +110,14 @@ function ExchangeView({ exchangeId }: { exchangeId: string }) {
     setReloadKey((key) => key + 1)
   }
 
-  const conflict = (error: ApiError, action: MilestoneAction) => {
+  const completionChanged = (updated: Exchange, toast: string) => {
+    setNotice(null)
+    setExchange(updated)
+    showToast(toast)
+    setReloadKey((key) => key + 1)
+  }
+
+  const conflict = (error: ApiError, action: ExchangeAction) => {
     setNotice(conflictNotice(error, action, names))
     setReloadKey((key) => key + 1)
   }
@@ -132,12 +140,17 @@ function ExchangeView({ exchangeId }: { exchangeId: string }) {
       </div>
       <div className="match-layout proposal-review-layout">
         <div className="match-main">
-          {/* Banner slot: completion, cancellation and dispute notices (FE-6.4, FE-6.5) go here. */}
+          {/* Banner slot: completion here; cancellation and dispute notices (FE-6.5) join it. */}
           {notice && <p className="match-notice match-notice-error exchange-notice" role="alert">{notice}</p>}
+          <CompletionPanel exchange={exchange} businessId={business.id} names={names} canAct={canAct} onExchange={completionChanged} onConflict={conflict} />
           <section className={`match-panel proposal-standing exchange-standing exchange-standing-${exchange.status}`} aria-labelledby="exchange-standing-title">
             <h2 id="exchange-standing-title" className="match-side-title">Where it stands</h2>
             <p>
-              {exchange.status === 'active' ? 'Both businesses signed the agreement, so the exchange is active. ' : `The exchange is ${statusLabel.toLowerCase()}. `}
+              {exchange.status === 'active'
+                ? 'Both businesses signed the agreement, so the exchange is active. '
+                : exchange.status === 'completed'
+                  ? `Both businesses confirmed the exchange is complete${exchange.completion.completed_at ? ` on ${formatMatchDate(exchange.completion.completed_at)}` : ''}. `
+                  : `The exchange is ${statusLabel.toLowerCase()}. `}
               {business.name} delivers {milestoneCount(mine)} and {other.display_name} delivers {milestoneCount(exchange.milestones.length - mine)}. {progressText(accepted, count)}.
             </p>
             <ProgressBar accepted={accepted} count={count} className="exchange-progress-bar" />
@@ -173,6 +186,7 @@ function ExchangeView({ exchangeId }: { exchangeId: string }) {
             <dl className="match-status-facts">
               <div><dt>Status</dt><dd>{statusLabel}</dd></div>
               <div><dt>Active since</dt><dd>{formatMatchDate(exchange.activated_at)}</dd></div>
+              {exchange.completion.completed_at && <div><dt>Completed</dt><dd>{formatMatchDate(exchange.completion.completed_at)}</dd></div>}
               <div><dt>Progress</dt><dd>{progressText(accepted, count)}</dd></div>
               <div><dt>Next due</dt><dd>{exchange.next_due_date ? formatMatchDate(exchange.next_due_date) : 'Nothing due'}</dd></div>
               <div><dt>Review period</dt><dd>{days(exchange.review_period_days)}</dd></div>

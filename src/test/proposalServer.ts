@@ -435,7 +435,7 @@ export interface ProposalServerOptions {
   /** Every agreement the business has; the list filters them like the API does. */
   agreements?: AgreementSummary[]
   agreement?: Agreement
-  /** The business's active exchanges, and the one exchange the detail route returns. */
+  /** The business's exchanges (the list filters them by status like the API does), and the one exchange the detail route returns. */
   exchanges?: ExchangeSummary[]
   exchange?: Exchange
   /** The exchange's history, newest first (default: activation by BFB). */
@@ -469,7 +469,10 @@ export function proposalServer({ role = 'owner', proposals = [], proposal = draf
       return { status: 200, data: { items: agreements.filter((item) => !status || item.status === status), next_cursor: null } }
     }
     if (method === 'get' && url === `${AGREEMENTS}/${agreement.id}`) return { status: 200, data: agreement }
-    if (method === 'get' && url === EXCHANGES) return { status: 200, data: { items: exchanges, next_cursor: null } }
+    if (method === 'get' && url === EXCHANGES) {
+      const status = (config.params as { status?: string } | undefined)?.status
+      return { status: 200, data: { items: exchanges.filter((item) => !status || item.status === status), next_cursor: null } }
+    }
     if (method === 'get' && url === `${EXCHANGES}/${exchange.id}`) return { status: 200, data: exchange }
     if (method === 'get' && url === `${EXCHANGES}/${exchange.id}/history`) return { status: 200, data: { items: history, next_cursor: null } }
     if (method === 'get' && url === '/legal/exchange-terms') return { status: 200, data: exchangeTerms() }

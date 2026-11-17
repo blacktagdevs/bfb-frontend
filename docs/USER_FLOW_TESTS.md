@@ -273,7 +273,7 @@ Use the agreement both businesses signed in 15.21.
 |---|---|---|---|
 | 16.1 | Press "Open the exchange" on the signed agreement | `/exchanges/<id>`: "EXCHANGE", the other business's name, "Active since …" with a link back to the signed agreement and a green Active pill. "Exchanges" is highlighted in the sidebar | [ ] |
 | 16.2 | Read the milestones | Every milestone from the accepted proposal, in order, each with "You deliver" or "You receive" and who delivers to whom, its due date, the service it is part of, description and "Done when: …", and a grey "Not started" pill. Status shows progress, the next due date, review period, revisions, cancellation notice and links to the agreement and proposal | [ ] |
-| 16.3 | Open `/exchanges` | The exchange in the prototype's card with the other business's logo or initials, "Business exchange with …", Active, milestones, next due date and start date, "Signed agreement" and "View details". No demo exchanges. Completed is empty | [ ] |
+| 16.3 | Open `/exchanges` | The exchange in the prototype's card with the other business's logo or initials, "Business exchange with …", Active, milestones, next due date and start date, "Signed agreement" and "View details". No demo exchanges. Completed shows 0 and "No completed exchanges yet" | [ ] |
 | 16.4 | Open the dashboard | "Your active exchanges" lists the exchange with "View exchange"; the "Active exchanges" stat shows 1 and when the next milestone is due. No demo exchanges, and no "3" next to Exchanges in the sidebar | [ ] |
 | 16.5 | Open the exchange as the other business | The same milestones, with "You deliver" and "You receive" swapped | [ ] |
 | 16.6 | Log in as a third business: open the exchange's link, then `/exchanges` and the dashboard | "We couldn't find this exchange", naming the business you are acting for; "No active exchanges yet" linking to agreements; the dashboard says there are none yet | [ ] |
@@ -300,6 +300,15 @@ Use the agreement both businesses signed in 15.21.
 | 16.27 | As the receiving business after the reminder | The same amber box naming the date; "Accept" and "Ask for changes" still work | [ ] |
 | 16.28 | Let the deemed-acceptance date pass with no decision (move `deemed_acceptance_at` into the past, then run `python -m src.jobs.exchange_timers` or reload) | The milestone is "Accepted"; the delivery says "Treated as accepted by BFB under the agreement's terms" and that no decision came within 5 business days of the reminder; History has the same entry by BFB | [ ] |
 | 16.29 | Repeat 16.20 to 16.26 at phone width (about 390 px) | Buttons wrap, the dialog fits, no sideways scrolling | [ ] |
+| 16.30 | Before every milestone is accepted | No completion panel and no "Mark exchange complete" | [ ] |
+| 16.31 | Once every milestone is accepted, open the exchange as a member | The blue Completion panel with the lock line, no buttons; Next step says an owner or administrator does it | [ ] |
+| 16.32 | As an owner or administrator, press "Mark exchange complete" | Toast "Exchange marked complete. <Other> needs to confirm it."; the panel says who marked it and when, with "Withdraw request"; History adds "Completion requested" | [ ] |
+| 16.33 | Press "Withdraw request", then mark it complete again | Toast "Completion request withdrawn."; History adds "Completion request withdrawn"; the button comes back | [ ] |
+| 16.34 | As the other business, open the exchange and press "Decline" | Toast "Completion request declined…"; the exchange stays active; History adds "Completion request declined". Mark it complete again from the first business | [ ] |
+| 16.35 | As the other business, press "Confirm completion", read the dialog, then confirm | The dialog says it's final; Cancel has focus and Escape closes it. After confirming: toast "Exchange completed…", a green "Exchange completed" panel naming who marked and who confirmed, the Completed pill, Status "Completed <date>"; History adds "Exchange completed: both businesses confirmed" | [ ] |
+| 16.36 | Press "Completion record" twice, as each business | A new tab opens the record each time (a fresh link); the fingerprint under the button matches the record | [ ] |
+| 16.37 | Open `/exchanges` and the Completed tab, then the dashboard | Active no longer lists it; Completed (1) shows it with a green Completed pill and "Completed <date>". The dashboard's active list drops it and shows "Last completed: the exchange with …" with "See completed exchanges", which opens the Completed tab | [ ] |
+| 16.38 | Repeat 16.32 to 16.37 at phone width (about 390 px) | The panel and buttons wrap, the fingerprint wraps, no sideways scrolling | [ ] |
 
 ## 17. Across the app
 
@@ -313,7 +322,7 @@ Use the agreement both businesses signed in 15.21.
 
 ## Known gaps (not failures)
 
-- Messages, the landing page, the dashboard's "Recommended for you", activity and its other stats still use demo data until their phases. Exchanges are real, with delivery and review; completing them arrives in FE-6.4.
+- Messages, the landing page, the dashboard's "Recommended for you", activity and its other stats still use demo data until their phases. Exchanges are real, from delivery and review to completion; cancellation and disputes arrive in FE-6.5.
 - Emails are printed, not sent, until an email provider is chosen ([DESIGN_SIGNOFFS.md](DESIGN_SIGNOFFS.md) row 37).
 - Signing uses the development provider (a typed name inside BFB) locally. Staging and production have no signature provider yet, so the second confirmation there says signing isn't switched on ([DESIGN_SIGNOFFS.md](DESIGN_SIGNOFFS.md) row 135).
 - Design and product items waiting on sign-off are in [DESIGN_SIGNOFFS.md](DESIGN_SIGNOFFS.md). A flow that passes here can still change there.

@@ -20,6 +20,8 @@ export type Submission = Schemas['SubmissionResponse']
 export type SubmissionAttachment = Schemas['SubmissionAttachmentResponse']
 export type NewSubmission = Schemas['NewSubmissionBody']
 export type Decision = Schemas['DecisionResponse']
+export type ExchangeCompletion = Schemas['ExchangeCompletionResponse']
+export type CompletionRequest = Schemas['CompletionRequestResponse']
 export type Reminder = Schemas['ReminderResponse']
 
 /** Limits on a change request's reason (bfb-api docs/EXCHANGES.md, "Review"). */
@@ -31,12 +33,17 @@ export const DELIVERY_LIMITS = { noteMax: 5000, links: 10, urlMax: 2000, labelMa
 export const EXCHANGES_PAGE_SIZE = 20
 export const HISTORY_PAGE_SIZE = 50
 
-/** The business's active exchanges, newest first. */
-export function listActiveExchanges(businessId: string, { limit = EXCHANGES_PAGE_SIZE, cursor }: { limit?: number; cursor?: string | null } = {}) {
+/** The business's exchanges with one status, newest first. */
+export function listExchanges(businessId: string, status: ExchangeStatus, { limit = EXCHANGES_PAGE_SIZE, cursor }: { limit?: number; cursor?: string | null } = {}) {
   return apiGet('/businesses/{business_id}/exchanges', {
     path: { business_id: businessId },
-    query: { status: 'active', limit, ...(cursor ? { cursor } : {}) },
+    query: { status, limit, ...(cursor ? { cursor } : {}) },
   })
+}
+
+/** The business's active exchanges, newest first. */
+export function listActiveExchanges(businessId: string, options: { limit?: number; cursor?: string | null } = {}) {
+  return listExchanges(businessId, 'active', options)
 }
 
 /** One exchange with the agreed services, terms and its milestones, in order. */
@@ -106,4 +113,28 @@ export function remindReviewer(businessId: string, exchangeId: string, milestone
   return apiPost('/businesses/{business_id}/exchanges/{exchange_id}/milestones/{milestone_id}/remind', undefined, {
     path: milestonePath(businessId, exchangeId, milestoneId),
   })
+}
+
+function exchangePath(businessId: string, exchangeId: string) {
+  return { business_id: businessId, exchange_id: exchangeId }
+}
+
+/** Ask to complete the exchange once every milestone is accepted (an owner or administrator). */
+export function requestCompletion(businessId: string, exchangeId: string): Promise<Exchange> {
+  return apiPost('/businesses/{business_id}/exchanges/{exchange_id}/completion', undefined, { path: exchangePath(businessId, exchangeId) })
+}
+
+/** Confirm the other business's completion request: the exchange becomes completed. */
+export function confirmCompletion(businessId: string, exchangeId: string): Promise<Exchange> {
+  return apiPost('/businesses/{business_id}/exchanges/{exchange_id}/completion/confirm', undefined, { path: exchangePath(businessId, exchangeId) })
+}
+
+/** Withdraw the pending completion request (for the business that didn't make it, this declines it). */
+export function withdrawCompletion(businessId: string, exchangeId: string): Promise<Exchange> {
+  return apiPost('/businesses/{business_id}/exchanges/{exchange_id}/completion/withdraw', undefined, { path: exchangePath(businessId, exchangeId) })
+}
+
+/** A fresh short-lived link to the completion record. Never store it. */
+export function getCompletionRecord(businessId: string, exchangeId: string) {
+  return apiGet('/businesses/{business_id}/exchanges/{exchange_id}/completion-record', { path: exchangePath(businessId, exchangeId) })
 }

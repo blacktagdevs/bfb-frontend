@@ -11,6 +11,9 @@ import {
   Sparkles,
 } from 'lucide-react'
 
+import { Link } from 'react-router-dom'
+
+import { paths } from '../../app/router/paths'
 import { Avatar } from '../../components/ui/Avatar'
 import { useActiveBusiness } from '../../lib/businesses/useActiveBusiness'
 import { businesses } from '../../mocks/businesses'
@@ -22,7 +25,7 @@ import { formatLocation } from '../businesses/profileLabels'
 import { useBusinessProfile } from '../businesses/useBusinessProfile'
 import { progressText } from '../exchanges/exchangeCopy'
 import { ProgressBar } from '../exchanges/ProgressBar'
-import { useActiveExchanges, type ActiveExchanges } from '../exchanges/useActiveExchanges'
+import { useActiveExchanges, useExchangeList, type ActiveExchanges } from '../exchanges/useActiveExchanges'
 import { fitBandLabel } from '../matching/fitCopy'
 import { formatMatchDate } from '../matching/matchInboxDisplay'
 import { useWaitingMatches } from '../matching/waitingMatches'
@@ -52,6 +55,7 @@ export function Dashboard({ goMarketplace, goMatches, openMatch, openExchange, g
   const activeId = useActiveBusiness().id
   const { count: waiting, first: nextMatch } = useWaitingMatches(activeId)
   const { state: exchanges, retry: retryExchanges } = useActiveExchanges(activeId)
+  const { state: completed } = useExchangeList(activeId, 'completed', 1)
   const firstName = useSessionStore((state) => state.user?.displayName.trim().split(/\s+/)[0]) || 'there'
   // Needs are listings now (FE-2.4), not profile answers: the need stays demo copy.
   const primaryNeed = 'marketing support'
@@ -125,7 +129,8 @@ export function Dashboard({ goMarketplace, goMatches, openMatch, openExchange, g
       <div className="dashboard-columns">
         <section className="dashboard-panel">
           <div className="content-heading"><div><h2>Your active exchanges</h2><p>Keep your current collaborations moving.</p></div><button type="button" className="link-button" onClick={goExchanges}>View all <ArrowRight size={16} aria-hidden="true" /></button></div>
-          <ActiveExchangeList state={exchanges} retry={retryExchanges} openExchange={openExchange} goExchanges={goExchanges} />
+          <ActiveExchangeList state={exchanges} retry={retryExchanges} openExchange={openExchange} goExchanges={goExchanges} anyCompleted={completed.kind === 'ready' && completed.items.length > 0} />
+          <CompletedExchangesLine state={completed} />
         </section>
         <section className="dashboard-panel activity-panel">
           <div className="content-heading"><div><h2>Recent activity</h2><p>The latest from your network.</p></div></div>
@@ -155,7 +160,7 @@ function exchangeStat(state: ActiveExchanges): { value: string; meta: string } {
 }
 
 /** The newest three active exchanges, in the prototype's rows. */
-function ActiveExchangeList({ state, retry, openExchange, goExchanges }: { state: ActiveExchanges; retry: () => void; openExchange: (id: string) => void; goExchanges: () => void }) {
+function ActiveExchangeList({ state, retry, openExchange, goExchanges, anyCompleted }: { state: ActiveExchanges; retry: () => void; openExchange: (id: string) => void; goExchanges: () => void; anyCompleted: boolean }) {
   if (state.kind === 'loading') return <p className="dashboard-panel-note">Loading your exchanges…</p>
   if (state.kind === 'error') {
     return (
@@ -167,7 +172,7 @@ function ActiveExchangeList({ state, retry, openExchange, goExchanges }: { state
   if (state.items.length === 0) {
     return (
       <p className="dashboard-panel-note">
-        No active exchanges yet. One starts when both businesses sign its agreement.{' '}
+        {anyCompleted ? 'No active exchanges right now.' : 'No active exchanges yet.'} One starts when both businesses sign its agreement.{' '}
         <button type="button" className="dashboard-profile-action" onClick={goExchanges}>Go to exchanges <ArrowRight size={13} aria-hidden="true" /></button>
       </p>
     )
@@ -192,6 +197,18 @@ function ActiveExchangeList({ state, retry, openExchange, goExchanges }: { state
         )
       })}
     </ul>
+  )
+}
+
+/** Under the active exchanges: the most recently completed one, linking to the Completed tab. Nothing until one exists. */
+function CompletedExchangesLine({ state }: { state: ActiveExchanges }) {
+  if (state.kind !== 'ready' || state.items.length === 0) return null
+  const latest = state.items[0]
+  return (
+    <p className="dashboard-panel-note dashboard-completed-note">
+      <CircleCheck size={14} aria-hidden="true" /> Last completed: the exchange with {latest.other_business.display_name}, {formatMatchDate(latest.updated_at)}.{' '}
+      <Link className="dashboard-profile-action" to={`${paths.exchanges}?tab=completed`}>See completed exchanges <ArrowRight size={13} aria-hidden="true" /></Link>
+    </p>
   )
 }
 
