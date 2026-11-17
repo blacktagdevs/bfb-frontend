@@ -19,6 +19,11 @@ export type ExchangeHistoryPage = Schemas['ExchangeHistoryResponse']
 export type Submission = Schemas['SubmissionResponse']
 export type SubmissionAttachment = Schemas['SubmissionAttachmentResponse']
 export type NewSubmission = Schemas['NewSubmissionBody']
+export type Decision = Schemas['DecisionResponse']
+export type Reminder = Schemas['ReminderResponse']
+
+/** Limits on a change request's reason (bfb-api docs/EXCHANGES.md, "Review"). */
+export const REVIEW_LIMITS = { reasonMax: 5000 }
 
 /** Limits on a delivery (bfb-api docs/EXCHANGES.md, "Delivery"). The server checks again. */
 export const DELIVERY_LIMITS = { noteMax: 5000, links: 10, urlMax: 2000, labelMax: 200, files: 10 }
@@ -69,5 +74,36 @@ export async function listSubmissions(businessId: string, exchangeId: string, mi
 export function getAttachmentUrl(businessId: string, exchangeId: string, milestoneId: string, submissionId: string, uploadId: string) {
   return apiGet('/businesses/{business_id}/exchanges/{exchange_id}/milestones/{milestone_id}/submissions/{submission_id}/attachments/{upload_id}', {
     path: { business_id: businessId, exchange_id: exchangeId, milestone_id: milestoneId, submission_id: submissionId, upload_id: uploadId },
+  })
+}
+
+function milestonePath(businessId: string, exchangeId: string, milestoneId: string) {
+  return { business_id: businessId, exchange_id: exchangeId, milestone_id: milestoneId }
+}
+
+/**
+ * Accept the milestone's latest delivery (an owner or administrator of the receiving business).
+ * `submissionId` is the delivery the reviewer looked at; a newer one makes the API refuse.
+ */
+export function acceptMilestone(businessId: string, exchangeId: string, milestoneId: string, submissionId: string): Promise<ExchangeMilestone> {
+  return apiPost('/businesses/{business_id}/exchanges/{exchange_id}/milestones/{milestone_id}/accept', { submission_id: submissionId }, {
+    path: milestonePath(businessId, exchangeId, milestoneId),
+  })
+}
+
+/** Ask for changes on the latest delivery, saying which acceptance criteria are not met. */
+export function requestChanges(businessId: string, exchangeId: string, milestoneId: string, submissionId: string, reason: string): Promise<ExchangeMilestone> {
+  return apiPost('/businesses/{business_id}/exchanges/{exchange_id}/milestones/{milestone_id}/request-changes', { submission_id: submissionId, reason }, {
+    path: milestonePath(businessId, exchangeId, milestoneId),
+  })
+}
+
+/**
+ * Remind the receiving business once its review period has ended (an owner or administrator of
+ * the delivering business, once per delivery). Sets when the milestone is treated as accepted.
+ */
+export function remindReviewer(businessId: string, exchangeId: string, milestoneId: string): Promise<ExchangeMilestone> {
+  return apiPost('/businesses/{business_id}/exchanges/{exchange_id}/milestones/{milestone_id}/remind', undefined, {
+    path: milestonePath(businessId, exchangeId, milestoneId),
   })
 }

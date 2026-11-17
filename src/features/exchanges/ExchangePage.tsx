@@ -14,12 +14,15 @@ import { ServiceItem } from '../proposals/ProposalDocument'
 import { CASH_TIMING_LABELS, days, formatFullDate } from '../proposals/proposalCopy'
 import { canManageTeam } from '../team/teamPermissions'
 import {
+  conflictNotice,
   deliveryLine,
   EXCHANGE_STATUS_LABELS,
   MILESTONE_STATUS_LABELS,
   milestoneCount,
   nextStepText,
   progressText,
+  reviewOverdue,
+  type MilestoneAction,
   type Names,
 } from './exchangeCopy'
 import { ExchangeHistory } from './ExchangeHistory'
@@ -100,14 +103,17 @@ function ExchangeView({ exchangeId }: { exchangeId: string }) {
     setReloadKey((key) => key + 1)
   }
 
-  const conflict = (error: ApiError) => {
-    setNotice(
-      error.code === 'exchange_party_not_allowed'
-        ? `Only ${other.display_name} can deliver that milestone, so nothing was submitted.`
-        : 'This milestone or exchange changed since you opened it, so your delivery wasn’t submitted. The page now shows where it stands.',
-    )
+  const reviewed = (toast: string) => {
+    setNotice(null)
+    showToast(toast)
     setReloadKey((key) => key + 1)
   }
+
+  const conflict = (error: ApiError, action: MilestoneAction) => {
+    setNotice(conflictNotice(error, action, names))
+    setReloadKey((key) => key + 1)
+  }
+  const canAct = canManageTeam(business.role)
 
   return (
     <>
@@ -136,7 +142,7 @@ function ExchangeView({ exchangeId }: { exchangeId: string }) {
             </p>
             <ProgressBar accepted={accepted} count={count} className="exchange-progress-bar" />
             <p className="exchange-next-step">
-              <strong>Next step for {business.name}:</strong> {nextStepText(exchange, business.id, names, { canReview: canManageTeam(business.role) })}
+              <strong>Next step for {business.name}:</strong> {nextStepText(exchange, business.id, names, { canReview: canAct })}
             </p>
           </section>
           <section className="match-panel" aria-labelledby="exchange-milestones-title">
@@ -151,7 +157,7 @@ function ExchangeView({ exchangeId }: { exchangeId: string }) {
                 <ol className="exchange-milestones" aria-label="Milestones">
                   {exchange.milestones.map((milestone) => (
                     <MilestoneRow key={milestone.id} milestone={milestone} exchange={exchange} businessId={business.id} names={names}>
-                      <MilestoneDeliveries exchange={exchange} milestone={milestone} businessId={business.id} names={names} onSubmitted={submitted} onConflict={conflict} />
+                      <MilestoneDeliveries exchange={exchange} milestone={milestone} businessId={business.id} names={names} canAct={canAct} onSubmitted={submitted} onReviewed={reviewed} onConflict={conflict} />
                     </MilestoneRow>
                   ))}
                 </ol>
@@ -216,7 +222,9 @@ export function MilestoneRow({ milestone, exchange, businessId, names, children 
         </p>
         {milestone.status === 'submitted' && milestone.review_due_at && (
           <p className="exchange-milestone-review">
-            {delivery.mine ? `${names.other} reviews it by ${formatFullDate(milestone.review_due_at)}.` : `Review it by ${formatFullDate(milestone.review_due_at)}.`}
+            {reviewOverdue(milestone)
+              ? delivery.mine ? `${names.other}’s review was due by ${formatFullDate(milestone.review_due_at)}.` : `Your review was due by ${formatFullDate(milestone.review_due_at)}.`
+              : delivery.mine ? `${names.other} reviews it by ${formatFullDate(milestone.review_due_at)}.` : `Review it by ${formatFullDate(milestone.review_due_at)}.`}
           </p>
         )}
         {milestone.description && <p>{milestone.description}</p>}

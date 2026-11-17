@@ -194,7 +194,7 @@ describe('submitting a delivery', () => {
     await screen.findByRole('list', { name: 'Milestones' })
     expect(within(milestone(1)).getByRole('article', { name: 'Delivery 1' })).toHaveTextContent('Dana Studio (Northside Studio)')
     expect(within(milestone(1)).queryByRole('button', { name: /Submit/ })).not.toBeInTheDocument()
-    expect(milestone(1)).toHaveTextContent('Accepting a delivery or asking for changes on BFB comes in a later release.')
+    expect(milestone(1)).toHaveTextContent('Only owners and administrators of Northstar Digital can accept a delivery or ask for changes.')
   })
 
   it('resubmits after changes were asked for, as a revision, and shows earlier deliveries', async () => {

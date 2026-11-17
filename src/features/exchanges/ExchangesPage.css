@@ -146,3 +146,22 @@ ul.exchange-page-list { list-style: none; margin: 0; padding: 0; }
   .exchange-delivery-link > .form-field:nth-child(2) { grid-column: 1; }
   .exchange-delivery-link .exchange-delivery-remove { grid-column: 2; grid-row: 1; }
 }
+
+/* Review (FE-6.3): accept or ask for changes, the reminder, and the decision on each delivery. */
+.exchange-milestone p.exchange-review-due { color: var(--slate); font-size: var(--text-base); }
+.exchange-milestone p.exchange-lock-line { margin: 0; font-size: var(--text-base); line-height: 1.5; }
+.exchange-milestone p.exchange-reminder-note { display: flex; gap: 7px; align-items: flex-start; background: #fffaf0; border: 1px solid #f3e5bf; border-radius: var(--radius-sm); padding: 8px 10px; color: #6b4a00; font-size: var(--text-base); }
+.exchange-reminder-note svg { flex: 0 0 auto; margin-top: 3px; color: #9a6700; }
+.exchange-reminder-note strong { color: #6b4a00; }
+.exchange-milestone p.exchange-submission-reminder { color: var(--muted); font-size: var(--text-sm); }
+.exchange-submission-reminder svg { vertical-align: -2px; margin-right: 3px; }
+.exchange-decision { border-radius: var(--radius-sm); padding: 8px 10px; display: flex; flex-direction: column; gap: 4px; }
+.exchange-decision-accepted { background: var(--green-pale); border: 1px solid #ccecdf; }
+.exchange-decision-changes { background: #fffaf0; border: 1px solid #f3e5bf; }
+.exchange-milestone .exchange-decision p { font-size: var(--text-sm); color: var(--muted); }
+.exchange-decision p:first-child { display: flex; flex-wrap: wrap; align-items: center; gap: 4px; }
+.exchange-decision-accepted p:first-child svg, .exchange-decision-accepted strong { color: var(--green); }
+.exchange-decision-changes strong { color: #9a6700; }
+.exchange-milestone .exchange-decision p.exchange-decision-reason { color: var(--slate); font-size: var(--text-base); white-space: pre-wrap; }
+.exchange-review-form .exchange-milestone-criteria { background: white; }
+.exchange-accept-dialog .proposal-accept-summary dd { overflow-wrap: anywhere; }

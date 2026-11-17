@@ -91,7 +91,7 @@ Recommended order is S0 through S8. The frontend S0 packages need no API work an
 | FE-5.3 | Signed agreement, downloads and active exchange | FE-5.2, API-5.5 | done |
 | FE-6.1 | Exchange workspace and status history | FE-5.3, API-6.1 | done |
 | FE-6.2 | Deliver a milestone | FE-6.1, API-6.2 | done |
-| FE-6.3 | Review a delivery | FE-6.2, API-6.3 | in progress |
+| FE-6.3 | Review a delivery | FE-6.2, API-6.3 | done |
 | FE-6.4 | Completion | FE-6.3, API-6.4 | todo |
 | FE-6.5 | Cancellation and disputes | FE-6.1, API-6.5 | todo |
 

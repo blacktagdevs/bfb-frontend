@@ -285,11 +285,21 @@ Use the agreement both businesses signed in 15.21.
 | 16.12 | As the business that delivers milestone 1, press "Submit delivery" on it and then "Submit delivery" in the form without writing anything | The form opens inside the milestone; "Write a note on what you delivered." under the note and nothing is sent | [ ] |
 | 16.13 | Write a note, add a link with a label, add a PDF and an image, and try a `.zip` | The two files upload with a progress bar and read "uploaded"; the `.zip` is refused in red, naming the formats; "Files 3 of 10". Remove the `.zip` | [ ] |
 | 16.14 | Press "Submit delivery" | Toast "Delivery submitted. <Other business> has until <date> to review it."; the milestone is "Submitted" with "Delivery 1", your name and the time, the note, the link and both files; History adds "Delivery submitted" for Milestone 1 by you. No "Submit delivery" on it any more | [ ] |
-| 16.15 | Open the exchange as the other business | Milestone 1 shows the same delivery with "Review it by …", no submit button, and a line that accepting or asking for changes comes later. Press each file: a new tab opens the file; press again and it opens again (a fresh link each time) | [ ] |
+| 16.15 | Open the exchange as the other business | Milestone 1 shows the same delivery with "Review it by …", no submit button, and "Accept" and "Ask for changes" under the delivery. Press each file: a new tab opens the file; press again and it opens again (a fresh link each time) | [ ] |
 | 16.16 | As a member (not an owner or administrator) of the delivering business, deliver milestone 3 | Allowed, the same as 16.12 to 16.14 | [ ] |
-| 16.17 | After the other business asks for changes on milestone 1 (FE-6.3) | Milestone 1 reads "Changes requested" and "Revisions used: 0 of 2"; the button says "Submit revision"; the form is headed "Revision 1 of 2". Submitting shows "Revision 1 of 2" above "Show the earlier delivery", which adds "Delivery 1" | [ ] |
+| 16.17 | After the other business asks for changes on milestone 1 (16.21) | Milestone 1 reads "Changes requested" and "Revisions used: 0 of 2"; the button says "Submit revision"; the form is headed "Revision 1 of 2". Submitting shows "Revision 1 of 2" above "Show the earlier delivery", which adds "Delivery 1" | [ ] |
 | 16.18 | Ask for changes again past the revision limit, then resubmit | The form says the agreement doesn't require this revision but you can still submit; the delivery is labelled "Revision 3 (beyond the 2 agreed)" with the same neutral note | [ ] |
 | 16.19 | Repeat 16.12 to 16.14 at phone width (about 390 px) | The link fields stack, no sideways scrolling | [ ] |
+| 16.20 | As an owner or administrator of the receiving business, press "Accept" on a delivery, read the dialog, then Cancel | The dialog shows the delivery and "Done when", says accepting is final and has effects under the agreement (Exchange Terms 6.2); Cancel has focus and Escape closes it. Nothing changes | [ ] |
+| 16.21 | Press "Ask for changes", then "Ask for changes" in the form with no reason | The form opens inside the milestone with "Done when"; "Say which acceptance criteria the delivery doesn't meet yet." and nothing is sent | [ ] |
+| 16.22 | Write which criteria aren't met and send | Toast "Changes requested on …"; the milestone is amber "Changes requested", the delivery shows "Changes requested by <you>" with the reason; History adds "Changes requested". The delivering business sees the same reason and "Submit revision" (16.17) | [ ] |
+| 16.23 | After the revision arrives, press "Accept" and "Accept delivery" | Toast "“…” accepted."; the milestone is green "Accepted" with "Accepted by <you>" on the revision; progress, the exchange card and the dashboard count it (16.11); History adds "Delivery accepted" | [ ] |
+| 16.24 | As a member (not an owner or administrator) of the receiving business, open a submitted milestone | No "Accept" or "Ask for changes"; the lock line names who can | [ ] |
+| 16.25 | As the delivering business, before the review deadline | "<Other business> reviews it by …" and no "Send a reminder" | [ ] |
+| 16.26 | After the review deadline passes with no decision (in a throwaway database, move the submission's and milestone's `review_due_at` into the past), open the exchange as an owner of the delivering business and press "Send a reminder" | Before: "…'s review was due by …", what a reminder does, and the button (a member sees a lock line). After: the toast with the date it will be treated as accepted (5 business days later), an amber "Reminder sent …" box on the milestone for both businesses, "Reminder sent by …" on the delivery, no button; History adds "Reminder sent: treated as accepted on …" | [ ] |
+| 16.27 | As the receiving business after the reminder | The same amber box naming the date; "Accept" and "Ask for changes" still work | [ ] |
+| 16.28 | Let the deemed-acceptance date pass with no decision (move `deemed_acceptance_at` into the past, then run `python -m src.jobs.exchange_timers` or reload) | The milestone is "Accepted"; the delivery says "Treated as accepted by BFB under the agreement's terms" and that no decision came within 5 business days of the reminder; History has the same entry by BFB | [ ] |
+| 16.29 | Repeat 16.20 to 16.26 at phone width (about 390 px) | Buttons wrap, the dialog fits, no sideways scrolling | [ ] |
 
 ## 17. Across the app
 
@@ -303,7 +313,7 @@ Use the agreement both businesses signed in 15.21.
 
 ## Known gaps (not failures)
 
-- Messages, the landing page, the dashboard's "Recommended for you", activity and its other stats still use demo data until their phases. Exchanges are real; delivering, reviewing and completing them arrive through Phase 6.
+- Messages, the landing page, the dashboard's "Recommended for you", activity and its other stats still use demo data until their phases. Exchanges are real, with delivery and review; completing them arrives in FE-6.4.
 - Emails are printed, not sent, until an email provider is chosen ([DESIGN_SIGNOFFS.md](DESIGN_SIGNOFFS.md) row 37).
 - Signing uses the development provider (a typed name inside BFB) locally. Staging and production have no signature provider yet, so the second confirmation there says signing isn't switched on ([DESIGN_SIGNOFFS.md](DESIGN_SIGNOFFS.md) row 135).
 - Design and product items waiting on sign-off are in [DESIGN_SIGNOFFS.md](DESIGN_SIGNOFFS.md). A flow that passes here can still change there.
