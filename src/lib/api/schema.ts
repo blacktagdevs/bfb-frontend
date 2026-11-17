@@ -809,6 +809,26 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/v1/admin/exchanges/{exchange_id}/completion-record": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Get Completion Record
+         * @description A short-lived URL to an exchange's completion record, for staff.
+         */
+        get: operations["get_completion_record_api_v1_admin_exchanges__exchange_id__completion_record_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/v1/businesses/{business_id}/uploads": {
         parameters: {
             query?: never;
@@ -1923,6 +1943,152 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/v1/businesses/{business_id}/exchanges/{exchange_id}/milestones/{milestone_id}/accept": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Accept Milestone
+         * @description Accept the milestone's latest submission. An owner or administrator of the
+         *     receiving business, while the milestone is ``submitted``.
+         */
+        post: operations["accept_milestone_api_v1_businesses__business_id__exchanges__exchange_id__milestones__milestone_id__accept_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/businesses/{business_id}/exchanges/{exchange_id}/milestones/{milestone_id}/request-changes": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Request Milestone Changes
+         * @description Ask for changes to the latest submission, saying which acceptance criteria are
+         *     not met. An owner or administrator of the receiving business.
+         */
+        post: operations["request_milestone_changes_api_v1_businesses__business_id__exchanges__exchange_id__milestones__milestone_id__request_changes_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/businesses/{business_id}/exchanges/{exchange_id}/milestones/{milestone_id}/remind": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Remind Milestone
+         * @description Remind the receiving business once its review period has passed, once per
+         *     submission. Without a decision 5 business days later, the milestone is treated as
+         *     accepted. An owner or administrator of the delivering business.
+         */
+        post: operations["remind_milestone_api_v1_businesses__business_id__exchanges__exchange_id__milestones__milestone_id__remind_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/businesses/{business_id}/exchanges/{exchange_id}/completion": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Request Completion
+         * @description Ask the other business to confirm completion, once every milestone is accepted.
+         *     An owner or administrator of either business.
+         */
+        post: operations["request_completion_api_v1_businesses__business_id__exchanges__exchange_id__completion_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/businesses/{business_id}/exchanges/{exchange_id}/completion/confirm": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Confirm Completion
+         * @description Confirm the other business's completion request: the exchange becomes
+         *     ``completed`` and the completion record is stored.
+         */
+        post: operations["confirm_completion_api_v1_businesses__business_id__exchanges__exchange_id__completion_confirm_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/businesses/{business_id}/exchanges/{exchange_id}/completion/withdraw": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Withdraw Completion
+         * @description Withdraw the pending completion request. Either business.
+         */
+        post: operations["withdraw_completion_api_v1_businesses__business_id__exchanges__exchange_id__completion_withdraw_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/businesses/{business_id}/exchanges/{exchange_id}/completion-record": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Get Completion Record
+         * @description A short-lived URL to the completion record. Members of either business.
+         */
+        get: operations["get_completion_record_api_v1_businesses__business_id__exchanges__exchange_id__completion_record_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/v1/webhooks/signatures/{provider}": {
         parameters: {
             query?: never;
@@ -1964,6 +2130,17 @@ export interface paths {
 export type webhooks = Record<string, never>;
 export interface components {
     schemas: {
+        /**
+         * AcceptMilestoneBody
+         * @description ``POST .../milestones/{milestone_id}/accept``.
+         */
+        AcceptMilestoneBody: {
+            /**
+             * Submission Id
+             * Format: uuid
+             */
+            submission_id: string;
+        };
         /** AccountResponse */
         AccountResponse: {
             user: components["schemas"]["UserResponse"];
@@ -2864,6 +3041,61 @@ export interface components {
             missing: string[];
         };
         /**
+         * CompletionRecordSummary
+         * @description The stored completion record; download it through ``.../completion-record``.
+         */
+        CompletionRecordSummary: {
+            /** Content Type */
+            content_type: string;
+            /** Sha256 */
+            sha256: string;
+            /**
+             * Created At
+             * Format: date-time
+             */
+            created_at: string;
+        };
+        /**
+         * CompletionRequestResponse
+         * @description A request to complete the exchange.
+         */
+        CompletionRequestResponse: {
+            /**
+             * Id
+             * Format: uuid
+             */
+            id: string;
+            status: components["schemas"]["CompletionRequestStatus"];
+            /** Requested By User Id */
+            requested_by_user_id: string | null;
+            /** Requested By User Name */
+            requested_by_user_name: string | null;
+            /**
+             * Requested By Business Id
+             * Format: uuid
+             */
+            requested_by_business_id: string;
+            requested_by_side: components["schemas"]["Side"];
+            /**
+             * Requested At
+             * Format: date-time
+             */
+            requested_at: string;
+            /** Resolved By User Id */
+            resolved_by_user_id: string | null;
+            /** Resolved By User Name */
+            resolved_by_user_name: string | null;
+            /** Resolved By Business Id */
+            resolved_by_business_id: string | null;
+            /** Resolved At */
+            resolved_at: string | null;
+        };
+        /**
+         * CompletionRequestStatus
+         * @enum {string}
+         */
+        CompletionRequestStatus: "pending" | "withdrawn" | "confirmed";
+        /**
          * ComponentRole
          * @description This business's part in one offer-need pair.
          * @enum {string}
@@ -2904,6 +3136,33 @@ export interface components {
             operator_note?: string | null;
             /** Expires At */
             expires_at?: string | null;
+        };
+        /**
+         * DecisionResponse
+         * @description The receiving business's decision on a submission, or deemed acceptance
+         *     (API-6.3). Never changes.
+         */
+        DecisionResponse: {
+            /**
+             * Id
+             * Format: uuid
+             */
+            id: string;
+            decision: components["schemas"]["MilestoneDecisionType"];
+            /** Reason */
+            reason: string | null;
+            decided_by_type: components["schemas"]["ExchangeActorType"];
+            /** Decided By User Id */
+            decided_by_user_id: string | null;
+            /** Decided By User Name */
+            decided_by_user_name: string | null;
+            /** Decided By Business Id */
+            decided_by_business_id: string | null;
+            /**
+             * Decided At
+             * Format: date-time
+             */
+            decided_at: string;
         };
         /** DeclineMatchRequest */
         DeclineMatchRequest: {
@@ -2988,6 +3247,18 @@ export interface components {
          * @enum {string}
          */
         ExchangeActorType: "business" | "staff" | "system";
+        /**
+         * ExchangeCompletionResponse
+         * @description Where the exchange stands on completion.
+         */
+        ExchangeCompletionResponse: {
+            /** Blockers */
+            blockers: string[];
+            request: components["schemas"]["CompletionRequestResponse"] | null;
+            /** Completed At */
+            completed_at: string | null;
+            record: components["schemas"]["CompletionRecordSummary"] | null;
+        };
         /**
          * ExchangeEventResponse
          * @description One history entry.
@@ -3128,6 +3399,10 @@ export interface components {
             review_due_at: string | null;
             /** Revisions Used */
             revisions_used: number;
+            /** Reminder Sent At */
+            reminder_sent_at: string | null;
+            /** Deemed Acceptance At */
+            deemed_acceptance_at: string | null;
         };
         /**
          * ExchangeResponse
@@ -3200,6 +3475,7 @@ export interface components {
             cash_adjustment: components["schemas"]["CashAdjustmentResponse"] | null;
             /** Milestones */
             milestones: components["schemas"]["ExchangeMilestoneResponse"][];
+            completion: components["schemas"]["ExchangeCompletionResponse"];
         };
         /**
          * ExchangeServiceResponse
@@ -3756,6 +4032,11 @@ export interface components {
             business_name: string;
             role: components["schemas"]["BusinessRole"];
         };
+        /**
+         * MilestoneDecisionType
+         * @enum {string}
+         */
+        MilestoneDecisionType: "accepted" | "changes_requested" | "deemed_accepted";
         /**
          * MilestoneStatus
          * @enum {string}
@@ -4536,6 +4817,49 @@ export interface components {
             /** Country */
             country?: string | null;
         };
+        /**
+         * ReminderResponse
+         * @description The delivering business's reminder after the review period (API-6.3).
+         */
+        ReminderResponse: {
+            /**
+             * Id
+             * Format: uuid
+             */
+            id: string;
+            /** Sent By User Id */
+            sent_by_user_id: string | null;
+            /** Sent By User Name */
+            sent_by_user_name: string | null;
+            /**
+             * Sent By Business Id
+             * Format: uuid
+             */
+            sent_by_business_id: string;
+            /**
+             * Sent At
+             * Format: date-time
+             */
+            sent_at: string;
+            /**
+             * Deemed Acceptance At
+             * Format: date-time
+             */
+            deemed_acceptance_at: string;
+        };
+        /**
+         * RequestChangesBody
+         * @description ``POST .../milestones/{milestone_id}/request-changes``.
+         */
+        RequestChangesBody: {
+            /**
+             * Submission Id
+             * Format: uuid
+             */
+            submission_id: string;
+            /** Reason */
+            reason: string;
+        };
         /** RequestChangesRequest */
         RequestChangesRequest: {
             /** Notes */
@@ -4855,6 +5179,8 @@ export interface components {
              * Format: date-time
              */
             review_due_at: string;
+            decision?: components["schemas"]["DecisionResponse"] | null;
+            reminder?: components["schemas"]["ReminderResponse"] | null;
         };
         /**
          * TeamMemberResponse
@@ -7366,6 +7692,73 @@ export interface operations {
             };
             /** @description `not_found` */
             404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    get_completion_record_api_v1_admin_exchanges__exchange_id__completion_record_get: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                exchange_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["SignedFileResponse"];
+                };
+            };
+            /** @description `unauthorized` or `access_token_expired` */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description `forbidden`: not support or administrator */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description `not_found` */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description `invalid_exchange_transition` with `details.reason` `not_completed` */
+            409: {
                 headers: {
                     [name: string]: unknown;
                 };
@@ -11184,6 +11577,484 @@ export interface operations {
             };
             /** @description `not_found`: as for the milestone, or no such submission or attachment on it */
             404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    accept_milestone_api_v1_businesses__business_id__exchanges__exchange_id__milestones__milestone_id__accept_post: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                exchange_id: string;
+                milestone_id: string;
+                business_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["AcceptMilestoneBody"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ExchangeMilestoneResponse"];
+                };
+            };
+            /** @description `unauthorized` or `access_token_expired` */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description `business_role_required` (owner or administrator), or `exchange_party_not_allowed` (`required` `receiving_business`) */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description `not_found`: as for the milestone, or no such submission on it */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description `invalid_exchange_transition`: the milestone is not `submitted`, the exchange is closed, or (`not_latest_submission`) the submission is not the latest */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    request_milestone_changes_api_v1_businesses__business_id__exchanges__exchange_id__milestones__milestone_id__request_changes_post: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                exchange_id: string;
+                milestone_id: string;
+                business_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["RequestChangesBody"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ExchangeMilestoneResponse"];
+                };
+            };
+            /** @description `unauthorized` or `access_token_expired` */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description `business_role_required` (owner or administrator), or `exchange_party_not_allowed` (`required` `receiving_business`) */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description `not_found`: as for the milestone, or no such submission on it */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description `invalid_exchange_transition`: the milestone is not `submitted`, the exchange is closed, or (`not_latest_submission`) the submission is not the latest */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description `validation_error`: no reason */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+        };
+    };
+    remind_milestone_api_v1_businesses__business_id__exchanges__exchange_id__milestones__milestone_id__remind_post: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                exchange_id: string;
+                milestone_id: string;
+                business_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ExchangeMilestoneResponse"];
+                };
+            };
+            /** @description `unauthorized` or `access_token_expired` */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description `business_role_required` (owner or administrator), or `exchange_party_not_allowed` (`required` `responsible_business`) */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description `not_found`: as for the exchange, or no such milestone in it */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description `invalid_exchange_transition`: the milestone is not `submitted`, the exchange is closed, `review_period_running` or `reminder_already_sent` */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    request_completion_api_v1_businesses__business_id__exchanges__exchange_id__completion_post: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                exchange_id: string;
+                business_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ExchangeResponse"];
+                };
+            };
+            /** @description `unauthorized` or `access_token_expired` */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description `business_role_required` (owner or administrator) */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description `not_found`: no such business, the caller is not a member, or the business is not part of the exchange */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description `invalid_exchange_transition`: the exchange is closed, or `completion_blocked`, `completion_already_requested` or `no_completion_request` */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    confirm_completion_api_v1_businesses__business_id__exchanges__exchange_id__completion_confirm_post: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                exchange_id: string;
+                business_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ExchangeResponse"];
+                };
+            };
+            /** @description `unauthorized` or `access_token_expired` */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description `business_role_required` (owner or administrator), or `exchange_party_not_allowed` (`required` `other_business`): the caller's business made the request */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description `not_found`: no such business, the caller is not a member, or the business is not part of the exchange */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description `invalid_exchange_transition`: the exchange is closed, or `completion_blocked`, `completion_already_requested` or `no_completion_request` */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    withdraw_completion_api_v1_businesses__business_id__exchanges__exchange_id__completion_withdraw_post: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                exchange_id: string;
+                business_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ExchangeResponse"];
+                };
+            };
+            /** @description `unauthorized` or `access_token_expired` */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description `business_role_required` (owner or administrator) */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description `not_found`: no such business, the caller is not a member, or the business is not part of the exchange */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description `invalid_exchange_transition`: the exchange is closed, or `completion_blocked`, `completion_already_requested` or `no_completion_request` */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    get_completion_record_api_v1_businesses__business_id__exchanges__exchange_id__completion_record_get: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                exchange_id: string;
+                business_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["SignedFileResponse"];
+                };
+            };
+            /** @description `unauthorized` or `access_token_expired` */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description `not_found`: no such business, the caller is not a member, or the business is not part of the exchange */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description `invalid_exchange_transition` with `details.reason` `not_completed` */
+            409: {
                 headers: {
                     [name: string]: unknown;
                 };
