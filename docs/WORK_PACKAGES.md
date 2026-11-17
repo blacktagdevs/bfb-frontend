@@ -1,6 +1,6 @@
 # BFB Frontend Work Packages
 
-This file breaks the [development plan](DEVELOPMENT_PLAN.md#delivery-phases) into packages that one agent session can finish in one pull request. Phases 1 to 5 are broken down in detail. Later phases stay as outlines in the development plan and will be broken down when the phase before them is close to done.
+This file breaks the [development plan](DEVELOPMENT_PLAN.md#delivery-phases) into packages that one agent session can finish in one pull request. Phases 1 to 6 are broken down in detail. Later phases stay as outlines in the development plan and will be broken down when the phase before them is close to done.
 
 The API has a matching file: `bfb-api/docs/WORK_PACKAGES.md`. Frontend packages list the API packages they need.
 
@@ -46,6 +46,11 @@ A slice is a working piece of the product you can demo end to end. It is done wh
 | S16 Agreement generated | An accepted proposal produces an agreement both businesses can read, under a versioned set of Exchange Terms | API-5.1, API-5.2 | FE-5.1 |
 | S17 Sign | Each business names its signer, who confirms authority and consent and signs (development signing provider) | API-5.3, API-5.4 | FE-5.2 |
 | S18 Signed and active | Once both sign, the signed document and evidence are downloadable and the exchange becomes active | API-5.5 | FE-5.3 |
+| S19 Exchange workspace | Both businesses see the same exchange: who provides what, milestones and their full history | API-6.1 | FE-6.1 |
+| S20 Deliver | The delivering business submits a milestone with a note, links and files | API-6.2 | FE-6.2 |
+| S21 Review | The receiving business accepts or asks for changes; a reminder and silence lead to deemed acceptance | API-6.3 | FE-6.3 |
+| S22 Complete | With every milestone accepted, both businesses confirm completion and download the completion record | API-6.4 | FE-6.4 |
+| S23 Cancel or dispute | Give cancellation notice, open a dispute, and close it as staff | API-6.5 | FE-6.5 |
 
 Recommended order is S0 through S8. The frontend S0 packages need no API work and can start now.
 
@@ -84,6 +89,11 @@ Recommended order is S0 through S8. The frontend S0 packages need no API work an
 | FE-5.1 | Agreement page and Exchange Terms | FE-4.5, API-5.2 | done |
 | FE-5.2 | Signer setup and signing | FE-5.1, API-5.4 | done |
 | FE-5.3 | Signed agreement, downloads and active exchange | FE-5.2, API-5.5 | done |
+| FE-6.1 | Exchange workspace and status history | FE-5.3, API-6.1 | todo |
+| FE-6.2 | Deliver a milestone | FE-6.1, API-6.2 | todo |
+| FE-6.3 | Review a delivery | FE-6.2, API-6.3 | todo |
+| FE-6.4 | Completion | FE-6.3, API-6.4 | todo |
+| FE-6.5 | Cancellation and disputes | FE-6.1, API-6.5 | todo |
 
 ## Phase 0: Foundation
 
@@ -442,3 +452,60 @@ Done when:
 - Tests cover downloads, the exchanges list and detail, and the dashboard change.
 - This meets the Phase 5 exit criteria in the development plan, apart from the real provider.
 
+## Phase 6: Exchange workspace, delivery and completion
+
+Phase goal: both businesses carry out the signed exchange on BFB and see the same obligations and history. The rules (review period, reminders and deemed acceptance, revision limit, cancellation notice, disputes), statuses and endpoints are in `bfb-api/docs/EXCHANGES.md` and the Phase 6 section of `bfb-api/docs/WORK_PACKAGES.md`.
+
+Who can do what: any member of the delivering business can submit a delivery. Accepting, asking for changes, completion, cancellation and disputes need an owner or administrator. Members see these actions with a lock line instead of a button, as on the signing card.
+
+Notifications arrive in Phase 7. Until then, screens say plainly what the other business needs to do next, rather than promising that they have been told.
+
+Design sign-off rows: to avoid numbering clashes between parallel packages, FE-6.1 uses rows 160 to 169, FE-6.2 170 to 179, FE-6.3 180 to 189, FE-6.4 190 to 199 and FE-6.5 200 to 209.
+
+### FE-6.1 Exchange workspace and status history
+
+Scope:
+- Rework `/exchanges/:id` into the workspace: a "What each business provides" section (services and values for both sides, from the exchange detail), the milestone timeline with real statuses (Not started, Submitted, Changes requested, Accepted), and a "Next step" line for your business.
+- A status history panel on the exchange: every entry from the history endpoint, newest first, with who did it, when, and the milestone it concerns.
+- The exchange cards and the dashboard show progress from `milestones_accepted` (the empty progress bar fills in) and what each business provides where the API now gives it.
+
+Done when:
+- Tests cover the services section, every milestone status label, the history list (including entries by BFB itself), and dashboard progress.
+
+### FE-6.2 Deliver a milestone
+
+Scope:
+- On a milestone you deliver: "Submit delivery" opens a form with a note (required), up to 10 links and up to 10 files (uploaded through the existing upload flow), then submits.
+- Each milestone shows its submissions in order: number, who submitted, when, the note, links and files (each file download asks for a fresh signed link, as signed documents do). A resubmission is labelled as a revision, with revisions used out of the limit; going over the limit shows a neutral note that the agreement does not require further revisions.
+
+Done when:
+- Tests cover submitting with files and links, the note required, the form hidden from the receiving business, resubmission after changes requested, and file downloads.
+
+### FE-6.3 Review a delivery
+
+Scope:
+- On a submitted milestone you receive: "Accept" (with a short confirm that accepting has effects under the agreement, for example ownership transfer) and "Ask for changes" with a required reason that names which acceptance criteria are not met. Shows the review deadline.
+- For the delivering business, after the review deadline: "Send a reminder", then the date the milestone will be treated as accepted if there is still no answer. Deemed acceptance appears in the milestone and history as accepted by BFB under the agreement's terms.
+
+Done when:
+- Tests cover accept, ask for changes with and without a reason, the reminder only after the deadline, the deemed-acceptance date, and the members-only lock line.
+
+### FE-6.4 Completion
+
+Scope:
+- When every milestone is accepted: "Mark exchange complete" for owners and administrators, a pending state for the requesting business (with withdraw), and "Confirm completion" for the other business. Completed state: a completion summary and "Completion record" download (fresh signed link).
+- The Exchanges page's Completed tab and the dashboard show completed exchanges.
+
+Done when:
+- Tests cover request, withdraw, confirm, the completed state with the download, and the Completed tab.
+- With FE-6.1 to FE-6.3 this meets the Phase 6 exit criteria in the development plan, apart from notifications (Phase 7).
+
+### FE-6.5 Cancellation and disputes
+
+Scope:
+- "Cancel exchange": a reason and the date the notice takes effect (from the agreement's notice period). While notice runs: a banner on the exchange for both businesses, "Withdraw notice" for the giving business and "Agree to cancel now" for the other.
+- "Report a problem": open a dispute with a category, description and the milestones it concerns. The other business can respond once; the opener can withdraw it. An open dispute shows on the exchange and blocks completion.
+- Admin: a Disputes page (open first) with each dispute's exchange, statements, milestones and history, and "Close dispute" with a resolution and note.
+
+Done when:
+- Tests cover giving, withdrawing and agreeing to a cancellation, opening, responding to and withdrawing a dispute, completion blocked while a dispute is open, and staff closing a dispute.
