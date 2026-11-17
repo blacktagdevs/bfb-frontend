@@ -1,6 +1,6 @@
 import type { ApiError } from '../../lib/api/errors'
 import { formatMatchDate } from '../matching/matchInboxDisplay'
-import type { DisputeCategory, DisputeResolution, Exchange, ExchangeEvent, ExchangeMilestone, ExchangeStatus, MilestoneStatus, Submission } from './exchangesApi'
+import type { DisputeCategory, DisputeResolution, Exchange, ExchangeEvent, ExchangeMilestone, ExchangeStatus, ExchangeSummary, MilestoneStatus, Submission } from './exchangesApi'
 
 // Copy for exchanges: the one place that turns exchange codes into words.
 
@@ -284,7 +284,10 @@ export function historyTitle(entry: ExchangeEvent, revisionLimit: number | null)
     case 'exchange.activated':
       return 'Exchange started: both businesses signed the agreement'
     case 'exchange.completed':
-      return 'Exchange completed: both businesses confirmed'
+      // Confirming completion while a notice to cancel was pending ends the notice (API-6.6).
+      return entry.metadata.superseded_cancellation_id
+        ? 'Exchange completed: both businesses confirmed, which ended the notice to cancel'
+        : 'Exchange completed: both businesses confirmed'
     case 'exchange.completion_requested':
       return 'Completion requested'
     case 'exchange.completion_withdrawn':
@@ -385,4 +388,40 @@ export function formatBytes(bytes: number): string {
 /** Whether your business can submit a delivery for the milestone now (any member). */
 export function canDeliver(exchange: Exchange, milestone: ExchangeMilestone, businessId: string): boolean {
   return exchange.status === 'active' && milestone.responsible_business_id === businessId && (milestone.status === 'pending' || milestone.status === 'changes_requested')
+}
+
+/** When a closed exchange closed (`completed_at` or `cancelled_at`, API-6.6); `null` while it is active. */
+export function closedAt(exchange: Pick<ExchangeSummary, 'status' | 'completed_at' | 'cancelled_at'>): string | null {
+  if (exchange.status === 'completed') return exchange.completed_at
+  if (exchange.status === 'cancelled') return exchange.cancelled_at
+  return null
+}
+
+/** The IP option's section in the Exchange Terms. */
+export const IP_TERMS_SECTIONS: Record<NonNullable<Exchange['ip_terms']>, string> = {
+  transfer_on_payment_and_completion: '6.2',
+  license_to_use: '6.3',
+  each_keeps_own: '6.4',
+}
+
+/**
+ * What accepting a delivery means for who owns the work, under the agreement's IP option
+ * (Exchange Terms 6.2 to 6.4). `names.mine` receives the work and `names.other` delivers it.
+ * Wording goes through legal review with rows 76 and 95 (DESIGN_SIGNOFFS.md row 215).
+ */
+export function acceptOwnershipText(exchange: Pick<Exchange, 'ip_terms' | 'ip_terms_label'>, names: Names): string {
+  const { ip_terms: option } = exchange
+  if (!option) {
+    return `The agreement’s terms on who owns or may use the work apply to it (Exchange Terms section 6).`
+  }
+  const named = `The agreement uses “${exchange.ip_terms_label ?? option}” (Exchange Terms ${IP_TERMS_SECTIONS[option]}):`
+  const once = `once it’s accepted and ${names.mine} has given ${names.other} everything it owes under the agreement`
+  switch (option) {
+    case 'transfer_on_payment_and_completion':
+      return `${named} ownership of this work passes to ${names.mine} ${once}.`
+    case 'license_to_use':
+      return `${named} ${names.other} keeps ownership, and ${once}, ${names.mine} may use it for its own business purposes.`
+    case 'each_keeps_own':
+      return `${named} ${names.other} keeps ownership, and ${once}, ${names.mine} may use it only for the purpose set out in the agreement.`
+  }
 }

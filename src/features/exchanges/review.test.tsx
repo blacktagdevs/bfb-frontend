@@ -9,7 +9,7 @@ import { ACCESS_TOKEN_KEY, clearStoredSession, REFRESH_TOKEN_KEY } from '../../l
 import { useSessionStore } from '../../stores/session'
 import { apiErrorBody, mockApi, type MockRequest } from '../../test/mockApi'
 import { activationEvent, EXCHANGE, EXCHANGE_ID, exchangeDetail, proposalServer, STUDIO_ID, type ProposalServerOptions } from '../../test/proposalServer'
-import { conflictNotice, formatDayTime, historyTitle, nextStepText, reviewOverdue } from './exchangeCopy'
+import { acceptOwnershipText, closedAt, conflictNotice, formatDayTime, historyTitle, nextStepText, reviewOverdue } from './exchangeCopy'
 import type { Decision, Exchange, ExchangeEvent, ExchangeMilestone, Submission } from './exchangesApi'
 
 function renderAt(path: string) {
@@ -111,6 +111,23 @@ function event(overrides: Partial<ExchangeEvent>): ExchangeEvent {
 }
 
 describe('review copy', () => {
+  it('names the agreement’s IP option when accepting a delivery', () => {
+    const names = { mine: 'Northstar Digital', other: 'Northside Studio' }
+    expect(acceptOwnershipText({ ip_terms: 'license_to_use', ip_terms_label: 'Licence to use' }, names)).toBe(
+      'The agreement uses “Licence to use” (Exchange Terms 6.3): Northside Studio keeps ownership, and once it’s accepted and Northstar Digital has given Northside Studio everything it owes under the agreement, Northstar Digital may use it for its own business purposes.',
+    )
+    expect(acceptOwnershipText({ ip_terms: 'each_keeps_own', ip_terms_label: 'Each keeps its own' }, names)).toBe(
+      'The agreement uses “Each keeps its own” (Exchange Terms 6.4): Northside Studio keeps ownership, and once it’s accepted and Northstar Digital has given Northside Studio everything it owes under the agreement, Northstar Digital may use it only for the purpose set out in the agreement.',
+    )
+    expect(acceptOwnershipText({ ip_terms: null, ip_terms_label: null }, names)).toBe('The agreement’s terms on who owns or may use the work apply to it (Exchange Terms section 6).')
+  })
+
+  it('dates a closed exchange by completed_at or cancelled_at, never updated_at', () => {
+    expect(closedAt({ status: 'completed', completed_at: '2027-03-02T09:00:00Z', cancelled_at: null })).toBe('2027-03-02T09:00:00Z')
+    expect(closedAt({ status: 'cancelled', completed_at: null, cancelled_at: '2027-01-24T09:00:00Z' })).toBe('2027-01-24T09:00:00Z')
+    expect(closedAt({ status: 'active', completed_at: null, cancelled_at: null })).toBeNull()
+  })
+
   it('knows when the review period has ended', () => {
     const now = new Date('2026-06-01T00:00:00Z')
     const base = exchangeDetail().milestones[0]
@@ -173,7 +190,7 @@ describe('reviewing a delivery', () => {
     const dialog = screen.getByRole('dialog', { name: 'Accept “First monthly reconciliation”?' })
     expect(dialog).toHaveTextContent('Every account reconciled')
     expect(dialog).toHaveTextContent('It’s final and has effects under the agreement')
-    expect(dialog).toHaveTextContent('Exchange Terms 6.2')
+    expect(dialog).toHaveTextContent('The agreement uses “Transfer on payment and completion” (Exchange Terms 6.2): ownership of this work passes to Northstar Digital once it’s accepted and Northstar Digital has given Northside Studio everything it owes under the agreement.')
     expect(within(dialog).getByRole('button', { name: 'Cancel' })).toHaveFocus()
     fireEvent.click(within(dialog).getByRole('button', { name: 'Accept delivery' }))
 

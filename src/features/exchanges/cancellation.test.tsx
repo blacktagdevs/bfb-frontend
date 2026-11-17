@@ -112,6 +112,8 @@ describe('cancellation and dispute copy', () => {
     expect(historyTitle(entry('exchange.cancellation_withdrawn'), 2)).toBe('Cancellation notice withdrawn')
     expect(historyTitle(entry('exchange.cancelled', { how: 'notice' }, 'system'), 2)).toBe('Exchange cancelled: the notice period ended')
     expect(historyTitle(entry('exchange.cancelled', { how: 'agreed' }), 2)).toBe('Exchange cancelled: both businesses agreed to cancel now')
+    expect(historyTitle(entry('exchange.completed', { superseded_cancellation_id: 'notice-1' }), 2)).toBe('Exchange completed: both businesses confirmed, which ended the notice to cancel')
+    expect(historyTitle(entry('exchange.completed'), 2)).toBe('Exchange completed: both businesses confirmed')
     expect(historyTitle(entry('dispute.opened', { category: 'quality' }), 2)).toBe('Dispute opened: the quality of the work')
     expect(historyTitle(entry('dispute.opened', { category: 'late_payment' }), 2)).toBe('Dispute opened: late payment')
     expect(historyTitle(entry('dispute.responded'), 2)).toBe('Response to the dispute added')
@@ -201,7 +203,12 @@ describe('cancelling an exchange', () => {
       reply: ({ method, url }: MockRequest) => {
         if (method === 'get' && url === EXCHANGE) return { status: 200, data: exchange }
         if (method === 'post' && url === `${CANCELLATION}/agree`) {
-          exchange = withNotice(null, { status: 'cancelled', updated_at: '2027-01-12T10:00:00Z' })
+          exchange = withNotice(null, {
+            status: 'cancelled',
+            cancelled_at: '2027-01-12T10:00:00Z',
+            updated_at: '2027-02-01T10:00:00Z',
+            cancellation: { ...theirNotice(), status: 'agreed', ended_at: '2027-01-12T10:00:00Z' },
+          })
           return { status: 200, data: theirNotice() }
         }
         return undefined
@@ -220,12 +227,43 @@ describe('cancelling an exchange', () => {
 
     expect(await screen.findByText('Exchange cancelled. Nothing more can be delivered or reviewed on it.')).toBeInTheDocument()
     const cancelled = await screen.findByRole('region', { name: 'Exchange cancelled' })
-    expect(cancelled).toHaveTextContent('The exchange was cancelled on 12 Jan 2027 (Exchange Terms 13.1)')
+    expect(cancelled).toHaveTextContent(/Dana Studio \(Northside Studio\) gave notice to cancel the exchange on 10 Jan 2027, \d\d:\d\d\. Northstar Digital agreed to cancel at once on 12 Jan 2027, \d\d:\d\d, so the exchange was cancelled then \(Exchange Terms 13\.1\)\./)
+    expect(cancelled).toHaveTextContent('ReasonWe are closing our second location.')
+    expect(within(screen.getByRole('region', { name: 'Status' })).getByText('Cancelled', { selector: 'dt' }).nextSibling).toHaveTextContent('12 Jan 2027')
+    expect(screen.getByRole('region', { name: 'Where it stands' })).toHaveTextContent('The exchange was cancelled on 12 Jan 2027.')
     expect(screen.getAllByText('Cancelled', { selector: '.match-pill' })).toHaveLength(1)
     expect(screen.queryByRole('button', { name: /Submit delivery/ })).not.toBeInTheDocument()
     // Disputes survive the end of the exchange; cancelling doesn't.
     expect(within(sideCard()).getByRole('button', { name: 'Report a problem' })).toBeInTheDocument()
     expect(within(sideCard()).queryByRole('button', { name: 'Cancel exchange' })).not.toBeInTheDocument()
+  })
+
+  it('shows who gave notice, why and that the notice period ran out on a cancelled exchange', async () => {
+    start({
+      exchange: withNotice(null, {
+        status: 'cancelled',
+        cancelled_at: '2027-01-24T09:00:00Z',
+        cancellation: notice({ status: 'effective', ended_at: '2027-01-24T09:00:00Z' }),
+      }),
+    })
+    renderAt(`/exchanges/${EXCHANGE_ID}`)
+    const cancelled = await screen.findByRole('region', { name: 'Exchange cancelled' })
+    expect(cancelled).toHaveTextContent(/Alex Morgan \(Northstar Digital\) gave notice to cancel the exchange on 10 Jan 2027, \d\d:\d\d, with 14 days’ notice\. The notice period ended on 24 Jan 2027, \d\d:\d\d, so the exchange was cancelled then/)
+    expect(cancelled).toHaveTextContent('ReasonWe are closing our second location.')
+    expect(cancelled).toHaveTextContent('Nothing more can be delivered or reviewed on it.')
+  })
+
+  it('says a no-notice cancellation took effect at once, and falls back without the notice', async () => {
+    start({
+      exchange: withNotice(null, { status: 'cancelled', cancelled_at: '2027-01-10T09:00:00Z', cancellation: notice({ status: 'effective', notice_days: 0, effective_at: '2027-01-10T09:00:00Z', ended_at: '2027-01-10T09:00:00Z' }) }),
+    })
+    renderAt(`/exchanges/${EXCHANGE_ID}`)
+    expect(await screen.findByRole('region', { name: 'Exchange cancelled' })).toHaveTextContent('with no notice period, so the exchange was cancelled at once (Exchange Terms 13.1).')
+    cleanup()
+    api?.restore()
+    start({ exchange: withNotice(null, { status: 'cancelled', cancelled_at: '2027-01-12T10:00:00Z', cancellation: null }) })
+    renderAt(`/exchanges/${EXCHANGE_ID}`)
+    expect(await screen.findByRole('region', { name: 'Exchange cancelled' })).toHaveTextContent('The exchange was cancelled on 12 Jan 2027 (Exchange Terms 13.1)')
   })
 
   it('shows members lock lines instead of cancellation buttons', async () => {
@@ -405,7 +443,7 @@ describe('disputes', () => {
 })
 
 describe('cancelled exchanges in lists', () => {
-  const cancelled = exchangeSummary({ id: 'exchange-off', status: 'cancelled', other_business: { ...studio, id: 'corner', display_name: 'Corner Bakery' }, updated_at: '2027-01-24T09:00:00Z' })
+  const cancelled = exchangeSummary({ id: 'exchange-off', status: 'cancelled', other_business: { ...studio, id: 'corner', display_name: 'Corner Bakery' }, cancelled_at: '2027-01-24T09:00:00Z', updated_at: '2027-02-20T09:00:00Z' })
 
   it('lists cancelled exchanges under their own tab', async () => {
     start({ exchanges: [exchangeSummary(), cancelled] })

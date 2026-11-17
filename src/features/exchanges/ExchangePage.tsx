@@ -17,6 +17,7 @@ import {
   conflictNotice,
   deliveryLine,
   EXCHANGE_STATUS_LABELS,
+  IP_TERMS_SECTIONS,
   MILESTONE_STATUS_LABELS,
   milestoneCount,
   nextStepText,
@@ -151,7 +152,7 @@ function ExchangeView({ exchangeId }: { exchangeId: string }) {
         <div className="match-main">
           {/* Banner slot: a refused action's notice, then cancellation, an open dispute and completion. */}
           {notice && <p className="match-notice match-notice-error exchange-notice" role="alert">{notice}</p>}
-          <CancelledPanel exchange={exchange} />
+          <CancelledPanel exchange={exchange} businessId={business.id} names={names} />
           <CancellationNoticePanel exchange={exchange} businessId={business.id} names={names} canAct={canAct} onDone={changed} onConflict={conflict} />
           <OpenDisputePanel exchange={exchange} businessId={business.id} names={names} canAct={canAct} onDone={changed} onConflict={conflict} />
           <CompletionPanel exchange={exchange} businessId={business.id} names={names} canAct={canAct} onExchange={completionChanged} onConflict={conflict} />
@@ -161,9 +162,9 @@ function ExchangeView({ exchangeId }: { exchangeId: string }) {
               {exchange.status === 'active'
                 ? 'Both businesses signed the agreement, so the exchange is active. '
                 : exchange.status === 'completed'
-                  ? `Both businesses confirmed the exchange is complete${exchange.completion.completed_at ? ` on ${formatMatchDate(exchange.completion.completed_at)}` : ''}. `
+                  ? `Both businesses confirmed the exchange is complete${exchange.completed_at ? ` on ${formatMatchDate(exchange.completed_at)}` : ''}. `
                   : exchange.status === 'cancelled'
-                    ? `The exchange was cancelled on ${formatMatchDate(exchange.updated_at)}. `
+                    ? `The exchange was cancelled${exchange.cancelled_at ? ` on ${formatMatchDate(exchange.cancelled_at)}` : ''}. `
                     : `The exchange is ${statusLabel.toLowerCase()}. `}
               {business.name} delivers {milestoneCount(mine)} and {other.display_name} delivers {milestoneCount(exchange.milestones.length - mine)}. {progressText(accepted, count)}.
             </p>
@@ -201,13 +202,17 @@ function ExchangeView({ exchangeId }: { exchangeId: string }) {
             <dl className="match-status-facts">
               <div><dt>Status</dt><dd>{statusLabel}</dd></div>
               <div><dt>Active since</dt><dd>{formatMatchDate(exchange.activated_at)}</dd></div>
-              {exchange.completion.completed_at && <div><dt>Completed</dt><dd>{formatMatchDate(exchange.completion.completed_at)}</dd></div>}
-              {exchange.status === 'cancelled' && <div><dt>Cancelled</dt><dd>{formatMatchDate(exchange.updated_at)}</dd></div>}
+              {exchange.completed_at && <div><dt>Completed</dt><dd>{formatMatchDate(exchange.completed_at)}</dd></div>}
+              {exchange.cancelled_at && <div><dt>Cancelled</dt><dd>{formatMatchDate(exchange.cancelled_at)}</dd></div>}
               <div><dt>Progress</dt><dd>{progressText(accepted, count)}</dd></div>
               {exchange.status === 'active' && <div><dt>Next due</dt><dd>{exchange.next_due_date ? formatMatchDate(exchange.next_due_date) : 'Nothing due'}</dd></div>}
               <div><dt>Review period</dt><dd>{days(exchange.review_period_days)}</dd></div>
               <div><dt>Revisions</dt><dd>{exchange.revision_limit === 0 ? 'None included' : `Up to ${exchange.revision_limit}`}</dd></div>
               <div><dt>Cancellation</dt><dd>{exchange.cancellation_notice_days === 0 ? 'No notice' : `${days(exchange.cancellation_notice_days)}’ notice`}</dd></div>
+              {exchange.ip_terms && (
+                <div><dt>Ownership</dt><dd>{exchange.ip_terms_label ?? exchange.ip_terms} (Exchange Terms {IP_TERMS_SECTIONS[exchange.ip_terms]})</dd></div>
+              )}
+              <div><dt>Confidentiality</dt><dd>{exchange.confidentiality ? 'Applies (Exchange Terms 7)' : 'Doesn’t apply'}</dd></div>
               {exchange.status === 'active' && exchange.cancellation_notice && <div><dt>Cancels on</dt><dd>{formatMatchDate(exchange.cancellation_notice.effective_at)}</dd></div>}
               {exchange.open_dispute && <div><dt>Dispute</dt><dd>Open</dd></div>}
               <div><dt>Agreement</dt><dd><Link to={paths.agreement(exchange.agreement_id)}>Signed</Link></dd></div>

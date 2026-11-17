@@ -134,6 +134,17 @@ describe('exchange workspace', () => {
     expect(within(status).getByText('Review period').nextSibling).toHaveTextContent('5 days')
     expect(within(status).getByText('Revisions').nextSibling).toHaveTextContent('Up to 2')
     expect(within(status).getByText('Cancellation').nextSibling).toHaveTextContent('14 days’ notice')
+    expect(within(status).getByText('Ownership').nextSibling).toHaveTextContent('Transfer on payment and completion (Exchange Terms 6.2)')
+    expect(within(status).getByText('Confidentiality').nextSibling).toHaveTextContent('Applies (Exchange Terms 7)')
+  })
+
+  it('shows the licence option and no confidentiality clause in Status', async () => {
+    start({ exchange: exchangeDetail({ ip_terms: 'license_to_use', ip_terms_label: 'Licence to use', confidentiality: false }) })
+    renderAt(`/exchanges/${EXCHANGE_ID}`)
+    await screen.findByRole('list', { name: 'Milestones' })
+    const status = screen.getByRole('region', { name: 'Status' })
+    expect(within(status).getByText('Ownership').nextSibling).toHaveTextContent('Licence to use (Exchange Terms 6.3)')
+    expect(within(status).getByText('Confidentiality').nextSibling).toHaveTextContent('Doesn’t apply')
   })
 
   it('says when no cash changes hands', async () => {

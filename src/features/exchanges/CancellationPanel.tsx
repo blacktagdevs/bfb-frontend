@@ -301,16 +301,44 @@ export function GiveNoticeDialog({ exchange, businessId, names, onCancel, onDone
   )
 }
 
-/** A cancelled exchange, in the banner slot: final, and what still applies. */
-export function CancelledPanel({ exchange }: { exchange: Exchange }) {
+/**
+ * A cancelled exchange, in the banner slot: final, who gave notice and why, whether the notice
+ * ran out or the other business agreed (from `cancellation`, API-6.6), and what still applies.
+ */
+export function CancelledPanel({ exchange, businessId, names }: { exchange: Exchange; businessId: string; names: Names }) {
   if (exchange.status !== 'cancelled') return null
+  const notice = exchange.cancellation ?? null
+  const on = exchange.cancelled_at ? ` on ${formatMatchDate(exchange.cancelled_at)}` : ''
   return (
     <section className="match-panel match-panel-body exchange-banner exchange-cancelled" aria-labelledby="exchange-cancelled-title">
       <h2 id="exchange-cancelled-title" className="match-side-title"><Ban size={14} aria-hidden="true" /> Exchange cancelled</h2>
-      <p>
-        The exchange was cancelled on {formatMatchDate(exchange.updated_at)} (Exchange Terms 13.1), so nothing more can be delivered or reviewed on it. History below shows who gave notice and when. {AT_THE_END}
-      </p>
+      {notice ? (
+        <>
+          <p>{cancelledHow(notice, businessId, names)}</p>
+          <p className="exchange-banner-quote"><span>Reason</span>{notice.reason}</p>
+          <p>Nothing more can be delivered or reviewed on it. {AT_THE_END}</p>
+        </>
+      ) : (
+        <p>
+          The exchange was cancelled{on} (Exchange Terms 13.1), so nothing more can be delivered or reviewed on it. History below shows who gave notice and when. {AT_THE_END}
+        </p>
+      )}
       <p>Either business can still report a problem with it: the Exchange Terms on disputes still apply after an exchange ends (13.5).</p>
     </section>
   )
+}
+
+/** "<name> (<business>) gave notice on <date>. <Other> agreed to cancel at once on <date>." or "…The notice period ended on <date>." */
+export function cancelledHow(notice: CancellationNotice, businessId: string, names: Names): string {
+  const givenByMe = notice.given_by_business_id === businessId
+  const giver = `${notice.given_by_user_name ?? 'A former team member'} (${givenByMe ? names.mine : names.other})`
+  const given = `${giver} gave notice to cancel the exchange on ${formatDateTime(notice.given_at)}`
+  const ended = notice.ended_at ?? notice.effective_at
+  if (notice.status === 'agreed') {
+    return `${given}. ${givenByMe ? names.other : names.mine} agreed to cancel at once on ${formatDateTime(ended)}, so the exchange was cancelled then (Exchange Terms 13.1).`
+  }
+  if (notice.notice_days === 0) {
+    return `${given}, with no notice period, so the exchange was cancelled at once (Exchange Terms 13.1).`
+  }
+  return `${given}, with ${noticeText(notice.notice_days)}. The notice period ended on ${formatDateTime(ended)}, so the exchange was cancelled then (Exchange Terms 13.1).`
 }

@@ -94,6 +94,7 @@ Recommended order is S0 through S8. The frontend S0 packages need no API work an
 | FE-6.3 | Review a delivery | FE-6.2, API-6.3 | done |
 | FE-6.4 | Completion | FE-6.3, API-6.4 | done |
 | FE-6.5 | Cancellation and disputes | FE-6.1, API-6.5 | done |
+| FE-6.6 | Exchange follow-ups | FE-6.5, API-6.6 | done |
 
 ## Phase 0: Foundation
 
@@ -509,3 +510,14 @@ Scope:
 
 Done when:
 - Tests cover giving, withdrawing and agreeing to a cancellation, opening, responding to and withdrawing a dispute, completion blocked while a dispute is open, and staff closing a dispute.
+
+### FE-6.6 Exchange follow-ups
+
+Scope (uses API-6.6; sign-off rows 215 to 219):
+- Date completed and cancelled exchanges by `completed_at` and `cancelled_at` (cards, dashboard, exchange page, Status) instead of `updated_at`.
+- The accept-delivery dialog names the agreement's IP option (`ip_terms_label`) and what it means for the delivery (Exchange Terms 6.2 to 6.4); Status shows the IP option and confidentiality.
+- The cancelled state shows the reason, who gave notice, and whether the notice ran out or the other business agreed, from `cancellation`.
+- History says when completing ended a pending notice to cancel (`superseded`).
+
+Done when:
+- Tests cover the new dates, the IP wording for each option, Status, each way a cancelled exchange ended, and the superseded history line.

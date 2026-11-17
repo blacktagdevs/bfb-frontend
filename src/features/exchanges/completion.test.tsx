@@ -83,7 +83,8 @@ function completed(): Exchange {
       completed_at: '2027-03-02T09:00:00Z',
       record: { content_type: 'text/html; charset=utf-8', sha256: 'e'.repeat(64), created_at: '2027-03-02T09:00:00Z' },
     },
-    { status: 'completed' },
+    // updated_at moves on later (a dispute after the end, say); the page dates completion by completed_at.
+    { status: 'completed', completed_at: '2027-03-02T09:00:00Z', updated_at: '2027-04-15T09:00:00Z' },
   )
 }
 
@@ -256,7 +257,7 @@ describe('completing an exchange', () => {
 })
 
 describe('completed exchanges in lists', () => {
-  const done = exchangeSummary({ id: 'exchange-done', status: 'completed', other_business: { ...studio, id: 'corner', display_name: 'Corner Bakery' }, milestones_accepted: 3, next_due_date: null, updated_at: '2027-03-02T09:00:00Z' })
+  const done = exchangeSummary({ id: 'exchange-done', status: 'completed', other_business: { ...studio, id: 'corner', display_name: 'Corner Bakery' }, milestones_accepted: 3, next_due_date: null, completed_at: '2027-03-02T09:00:00Z', updated_at: '2027-04-15T09:00:00Z' })
 
   it('lists completed exchanges under the Completed tab', async () => {
     start({ exchanges: [exchangeSummary(), done] })

@@ -206,7 +206,7 @@ function CompletedExchangesLine({ state }: { state: ActiveExchanges }) {
   const latest = state.items[0]
   return (
     <p className="dashboard-panel-note dashboard-completed-note">
-      <CircleCheck size={14} aria-hidden="true" /> Last completed: the exchange with {latest.other_business.display_name}, {formatMatchDate(latest.updated_at)}.{' '}
+      <CircleCheck size={14} aria-hidden="true" /> Last completed: the exchange with {latest.other_business.display_name}{latest.completed_at ? `, ${formatMatchDate(latest.completed_at)}` : ''}.{' '}
       <Link className="dashboard-profile-action" to={`${paths.exchanges}?tab=completed`}>See completed exchanges <ArrowRight size={13} aria-hidden="true" /></Link>
     </p>
   )
