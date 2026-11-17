@@ -25,7 +25,9 @@ import {
   type ExchangeAction,
   type Names,
 } from './exchangeCopy'
+import { CancellationNoticePanel, CancelledPanel } from './CancellationPanel'
 import { CompletionPanel } from './CompletionPanel'
+import { OpenDisputePanel, PastDisputes, SomethingWrongCard } from './DisputePanel'
 import { ExchangeHistory } from './ExchangeHistory'
 import { ProgressBar } from './ProgressBar'
 import { getExchange, type Exchange, type ExchangeMilestone, type Submission } from './exchangesApi'
@@ -110,6 +112,13 @@ function ExchangeView({ exchangeId }: { exchangeId: string }) {
     setReloadKey((key) => key + 1)
   }
 
+  /** A cancellation or dispute action worked: the exchange, its history and disputes reload. */
+  const changed = (toast: string) => {
+    setNotice(null)
+    showToast(toast)
+    setReloadKey((key) => key + 1)
+  }
+
   const completionChanged = (updated: Exchange, toast: string) => {
     setNotice(null)
     setExchange(updated)
@@ -140,8 +149,11 @@ function ExchangeView({ exchangeId }: { exchangeId: string }) {
       </div>
       <div className="match-layout proposal-review-layout">
         <div className="match-main">
-          {/* Banner slot: completion here; cancellation and dispute notices (FE-6.5) join it. */}
+          {/* Banner slot: a refused action's notice, then cancellation, an open dispute and completion. */}
           {notice && <p className="match-notice match-notice-error exchange-notice" role="alert">{notice}</p>}
+          <CancelledPanel exchange={exchange} />
+          <CancellationNoticePanel exchange={exchange} businessId={business.id} names={names} canAct={canAct} onDone={changed} onConflict={conflict} />
+          <OpenDisputePanel exchange={exchange} businessId={business.id} names={names} canAct={canAct} onDone={changed} onConflict={conflict} />
           <CompletionPanel exchange={exchange} businessId={business.id} names={names} canAct={canAct} onExchange={completionChanged} onConflict={conflict} />
           <section className={`match-panel proposal-standing exchange-standing exchange-standing-${exchange.status}`} aria-labelledby="exchange-standing-title">
             <h2 id="exchange-standing-title" className="match-side-title">Where it stands</h2>
@@ -150,7 +162,9 @@ function ExchangeView({ exchangeId }: { exchangeId: string }) {
                 ? 'Both businesses signed the agreement, so the exchange is active. '
                 : exchange.status === 'completed'
                   ? `Both businesses confirmed the exchange is complete${exchange.completion.completed_at ? ` on ${formatMatchDate(exchange.completion.completed_at)}` : ''}. `
-                  : `The exchange is ${statusLabel.toLowerCase()}. `}
+                  : exchange.status === 'cancelled'
+                    ? `The exchange was cancelled on ${formatMatchDate(exchange.updated_at)}. `
+                    : `The exchange is ${statusLabel.toLowerCase()}. `}
               {business.name} delivers {milestoneCount(mine)} and {other.display_name} delivers {milestoneCount(exchange.milestones.length - mine)}. {progressText(accepted, count)}.
             </p>
             <ProgressBar accepted={accepted} count={count} className="exchange-progress-bar" />
@@ -178,6 +192,7 @@ function ExchangeView({ exchangeId }: { exchangeId: string }) {
             </div>
           </section>
           <ProvidesSection exchange={exchange} businessId={business.id} names={names} />
+          <PastDisputes exchange={exchange} businessId={business.id} names={names} reloadKey={reloadKey} />
           <ExchangeHistory exchange={exchange} businessId={business.id} names={names} reloadKey={reloadKey} />
         </div>
         <aside className="match-side">
@@ -187,15 +202,19 @@ function ExchangeView({ exchangeId }: { exchangeId: string }) {
               <div><dt>Status</dt><dd>{statusLabel}</dd></div>
               <div><dt>Active since</dt><dd>{formatMatchDate(exchange.activated_at)}</dd></div>
               {exchange.completion.completed_at && <div><dt>Completed</dt><dd>{formatMatchDate(exchange.completion.completed_at)}</dd></div>}
+              {exchange.status === 'cancelled' && <div><dt>Cancelled</dt><dd>{formatMatchDate(exchange.updated_at)}</dd></div>}
               <div><dt>Progress</dt><dd>{progressText(accepted, count)}</dd></div>
-              <div><dt>Next due</dt><dd>{exchange.next_due_date ? formatMatchDate(exchange.next_due_date) : 'Nothing due'}</dd></div>
+              {exchange.status === 'active' && <div><dt>Next due</dt><dd>{exchange.next_due_date ? formatMatchDate(exchange.next_due_date) : 'Nothing due'}</dd></div>}
               <div><dt>Review period</dt><dd>{days(exchange.review_period_days)}</dd></div>
               <div><dt>Revisions</dt><dd>{exchange.revision_limit === 0 ? 'None included' : `Up to ${exchange.revision_limit}`}</dd></div>
               <div><dt>Cancellation</dt><dd>{exchange.cancellation_notice_days === 0 ? 'No notice' : `${days(exchange.cancellation_notice_days)}’ notice`}</dd></div>
+              {exchange.status === 'active' && exchange.cancellation_notice && <div><dt>Cancels on</dt><dd>{formatMatchDate(exchange.cancellation_notice.effective_at)}</dd></div>}
+              {exchange.open_dispute && <div><dt>Dispute</dt><dd>Open</dd></div>}
               <div><dt>Agreement</dt><dd><Link to={paths.agreement(exchange.agreement_id)}>Signed</Link></dd></div>
               <div><dt>Proposal</dt><dd><Link to={paths.proposal(exchange.proposal_id)}>Accepted</Link></dd></div>
             </dl>
           </section>
+          <SomethingWrongCard exchange={exchange} businessId={business.id} names={names} canAct={canAct} onDone={changed} onConflict={conflict} />
           <section className="match-panel match-panel-body" aria-labelledby="exchange-other-title">
             <h2 id="exchange-other-title" className="match-side-title">The other business</h2>
             <MatchBusinessHeader business={other} as="h3" />

@@ -1,5 +1,5 @@
 import type { Agreement, AgreementSigner, AgreementSummary, ExchangeTerms, SignerConsent } from '../features/agreements/agreementsApi'
-import type { Exchange, ExchangeEvent, ExchangeSummary } from '../features/exchanges/exchangesApi'
+import type { Dispute, Exchange, ExchangeEvent, ExchangeSummary } from '../features/exchanges/exchangesApi'
 import type { BusinessMatch, MatchBusiness } from '../features/matching/matchInboxApi'
 import type { Proposal, ProposalSummary, ProposalTerms, SentVersion } from '../features/proposals/proposalsApi'
 import { apiBusiness, apiErrorBody, apiMembership, apiUser, tokenBody, type MockHandler, type MockReply, type MockRequest } from './mockApi'
@@ -440,6 +440,8 @@ export interface ProposalServerOptions {
   exchange?: Exchange
   /** The exchange's history, newest first (default: activation by BFB). */
   history?: ExchangeEvent[]
+  /** The exchange's disputes, newest first (default: none). */
+  disputes?: Dispute[]
   reply?: (request: MockRequest) => MockReply | Promise<MockReply> | undefined
 }
 
@@ -449,7 +451,7 @@ function matchesFilters(item: ProposalSummary, params: { status?: string; waitin
   return true
 }
 
-export function proposalServer({ role = 'owner', proposals = [], proposal = draftProposal(), match = acceptedMatch(), agreements = [], agreement = agreementDetail(), exchanges = [], exchange = exchangeDetail(), history = [activationEvent()], reply }: ProposalServerOptions = {}): MockHandler {
+export function proposalServer({ role = 'owner', proposals = [], proposal = draftProposal(), match = acceptedMatch(), agreements = [], agreement = agreementDetail(), exchanges = [], exchange = exchangeDetail(), history = [activationEvent()], disputes = [], reply }: ProposalServerOptions = {}): MockHandler {
   return async (request) => {
     const custom = await reply?.(request)
     if (custom) return custom
@@ -475,6 +477,7 @@ export function proposalServer({ role = 'owner', proposals = [], proposal = draf
     }
     if (method === 'get' && url === `${EXCHANGES}/${exchange.id}`) return { status: 200, data: exchange }
     if (method === 'get' && url === `${EXCHANGES}/${exchange.id}/history`) return { status: 200, data: { items: history, next_cursor: null } }
+    if (method === 'get' && url === `${EXCHANGES}/${exchange.id}/disputes`) return { status: 200, data: { items: disputes } }
     if (method === 'get' && url === '/legal/exchange-terms') return { status: 200, data: exchangeTerms() }
     return { status: 404, data: apiErrorBody('not_found') }
   }

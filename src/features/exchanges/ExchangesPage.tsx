@@ -14,7 +14,9 @@ import { ProgressBar } from './ProgressBar'
 import { listExchanges, type ExchangeStatus, type ExchangeSummary } from './exchangesApi'
 import './ExchangesPage.css'
 
-type Tab = 'Active' | 'Completed'
+type Tab = 'Active' | 'Completed' | 'Cancelled'
+
+const TABS: Tab[] = ['Active', 'Completed', 'Cancelled']
 
 type LoadState =
   | { kind: 'loading' }
@@ -62,16 +64,17 @@ function useExchangePages(businessId: string, status: ExchangeStatus) {
 }
 
 /**
- * `/exchanges`: the active business's exchanges, in the prototype's cards, under Active and
- * Completed tabs (`?tab=completed` opens the second).
+ * `/exchanges`: the active business's exchanges, in the prototype's cards, under Active,
+ * Completed and Cancelled tabs (`?tab=completed` and `?tab=cancelled` open the others).
  */
 export function ExchangesPage() {
   const business = useActiveBusiness()
   const [params, setParams] = useSearchParams()
-  const tab: Tab = params.get('tab') === 'completed' ? 'Completed' : 'Active'
+  const tab: Tab = TABS.find((item) => item.toLowerCase() === params.get('tab')) ?? 'Active'
   const active = useExchangePages(business.id, 'active')
   const completed = useExchangePages(business.id, 'completed')
-  const lists: Record<Tab, ReturnType<typeof useExchangePages>> = { Active: active, Completed: completed }
+  const cancelled = useExchangePages(business.id, 'cancelled')
+  const lists: Record<Tab, ReturnType<typeof useExchangePages>> = { Active: active, Completed: completed, Cancelled: cancelled }
   const { state, loadMore, retry } = lists[tab]
 
   return (
@@ -81,7 +84,7 @@ export function ExchangesPage() {
         <Link className="button button-secondary" to={paths.agreements}><ScrollText size={16} aria-hidden="true" /> Agreements</Link>
       </div>
       <div className="exchange-tabs" role="tablist" aria-label="Exchanges">
-        {(['Active', 'Completed'] as const).map((item) => (
+        {TABS.map((item) => (
           <button
             key={item}
             type="button"
@@ -90,7 +93,7 @@ export function ExchangesPage() {
             aria-selected={tab === item}
             aria-controls="exchange-tab-panel"
             className={tab === item ? 'active' : ''}
-            onClick={() => setParams(item === 'Completed' ? { tab: 'completed' } : {}, { replace: true })}
+            onClick={() => setParams(item === 'Active' ? {} : { tab: item.toLowerCase() }, { replace: true })}
           >
             {item} {lists[item].count !== null && <span>{lists[item].count}</span>}
           </button>
@@ -104,6 +107,8 @@ export function ExchangesPage() {
         ) : state.items.length === 0 ? (
           tab === 'Completed' ? (
             <EmptyState icon={Handshake} title="No completed exchanges yet" description="An exchange moves here once every milestone is accepted and both businesses confirm it is complete." />
+          ) : tab === 'Cancelled' ? (
+            <EmptyState icon={Handshake} title="No cancelled exchanges" description="An exchange moves here if a notice to cancel takes effect, or the other business agrees to cancel at once." />
           ) : (
             <EmptyState
               icon={Handshake}
@@ -135,6 +140,9 @@ function ExchangeCard({ exchange }: { exchange: ExchangeSummary }) {
   const other = exchange.other_business
   const location = formatLocation(other)
   const completed = exchange.status === 'completed'
+  const cancelled = exchange.status === 'cancelled'
+  // The list has no completion or cancellation date yet; a closed exchange's last update is when it closed.
+  const closedOn = formatMatchDate(exchange.updated_at)
   return (
     <li className="exchange-page-card">
       <div className="exchange-card-business">
@@ -142,14 +150,16 @@ function ExchangeCard({ exchange }: { exchange: ExchangeSummary }) {
         <div>
           <span>{other.display_name}</span>
           <strong>Business exchange with {other.display_name}</strong>
-          <small>{location ? `${location} · ` : ''}{completed ? `Completed ${formatMatchDate(exchange.updated_at)}` : `Active since ${formatMatchDate(exchange.activated_at)}`}</small>
+          <small>{location ? `${location} · ` : ''}{completed ? `Completed ${closedOn}` : cancelled ? `Cancelled ${closedOn}` : `Active since ${formatMatchDate(exchange.activated_at)}`}</small>
         </div>
-        <span className={`status ${completed ? 'status-complete' : 'status-progress'}`}>{EXCHANGE_STATUS_LABELS[exchange.status]}</span>
+        <span className={`status ${completed ? 'status-complete' : cancelled ? 'status-cancelled' : 'status-progress'}`}>{EXCHANGE_STATUS_LABELS[exchange.status]}</span>
       </div>
       <dl className="exchange-trade-summary exchange-facts">
         <div><dt>MILESTONES</dt><dd>{milestoneCount(exchange.milestone_count)}, {exchange.milestones_accepted} accepted</dd></div>
         {completed ? (
-          <div><dt>COMPLETED</dt><dd>{formatMatchDate(exchange.updated_at)}</dd></div>
+          <div><dt>COMPLETED</dt><dd>{closedOn}</dd></div>
+        ) : cancelled ? (
+          <div><dt>CANCELLED</dt><dd>{closedOn}</dd></div>
         ) : (
           <div><dt>NEXT DUE</dt><dd>{exchange.next_due_date ? formatMatchDate(exchange.next_due_date) : 'Nothing due'}</dd></div>
         )}
@@ -159,7 +169,7 @@ function ExchangeCard({ exchange }: { exchange: ExchangeSummary }) {
       <ProgressBar accepted={exchange.milestones_accepted} count={exchange.milestone_count} className="exchange-card-progress" />
       <div className="exchange-card-actions">
         <Link className="button button-secondary" to={paths.agreement(exchange.agreement_id)}>Signed agreement</Link>
-        <Link className="button button-primary" to={paths.exchange(exchange.id)} aria-label={`View ${completed ? 'completed ' : ''}exchange with ${other.display_name}`}>View details <ArrowRight size={15} aria-hidden="true" /></Link>
+        <Link className="button button-primary" to={paths.exchange(exchange.id)} aria-label={`View ${completed ? 'completed ' : cancelled ? 'cancelled ' : ''}exchange with ${other.display_name}`}>View details <ArrowRight size={15} aria-hidden="true" /></Link>
       </div>
     </li>
   )

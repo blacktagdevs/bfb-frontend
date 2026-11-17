@@ -179,3 +179,43 @@ ul.exchange-page-list { list-style: none; margin: 0; padding: 0; }
 .exchange-completion > p.agreement-signed-hashes { color: var(--text-subtle); font-size: var(--text-sm); line-height: 1.6; }
 .exchange-completion .agreement-signed-hashes code { font-family: Menlo, Consolas, monospace; font-size: .95em; word-break: break-all; color: var(--slate); }
 .exchange-card-business > .status.status-complete { color: var(--green) !important; }
+
+/* Cancellation and disputes (FE-6.5): banners at the top of the exchange, the side card, the
+   dialogs, closed disputes and cancelled cards. */
+.exchange-banner .match-side-title { display: inline-flex; align-items: center; gap: 6px; }
+.exchange-banner > p { margin: 0; color: var(--slate); font-size: var(--text-lg); line-height: 1.55; overflow-wrap: anywhere; }
+.exchange-banner > p.exchange-lock-line { font-size: var(--text-base); }
+.exchange-banner .match-notice { margin: 0; }
+.exchange-banner .exchange-delivery-form { width: 100%; box-sizing: border-box; background: white; }
+.exchange-cancellation { background: #fffaf0; border-color: #f3e5bf; }
+.exchange-cancellation .match-side-title { color: #9a6700 !important; }
+.exchange-dispute { background: #fff7f8; border-color: #efcbd0; }
+.exchange-dispute .match-side-title { color: #a8323f !important; }
+.exchange-cancelled { background: #fbfcfd; }
+.exchange-banner > p.exchange-banner-quote { width: 100%; box-sizing: border-box; background: white; border: 1px solid var(--border); border-radius: var(--radius-md); padding: 9px 12px; font-size: var(--text-base); white-space: pre-wrap; }
+.exchange-banner-quote span, .exchange-dispute-response span { display: block; color: var(--muted); font-size: var(--text-sm); font-weight: 700; margin-bottom: 3px; white-space: normal; }
+.exchange-banner .exchange-completion-actions .button-secondary { background: white; }
+
+.exchange-problems > p { margin: 0; color: var(--slate); font-size: var(--text-base); line-height: 1.5; }
+.exchange-problems > p.exchange-lock-line { margin: 0; }
+.exchange-problems-actions { display: flex; flex-wrap: wrap; gap: 8px; }
+.exchange-problems .exchange-cancel-button { color: #a8323f; }
+
+.exchange-form-dialog { width: min(560px, 100%); }
+.exchange-form-dialog .modal-body { display: flex; flex-direction: column; gap: 14px; }
+.exchange-form-dialog .match-dialog-intro { margin: 0; }
+.exchange-form-dialog .form-field, .exchange-form-dialog .match-notice { margin: 0; }
+.exchange-check { display: flex; align-items: flex-start; gap: 9px; color: var(--navy); font-size: var(--text-base); cursor: pointer; }
+.exchange-check input { width: 16px; height: 16px; margin: 2px 0 0; accent-color: var(--blue); flex: 0 0 auto; }
+.exchange-check small { color: var(--muted); font-size: var(--text-sm); margin-left: 4px; }
+
+.exchange-disputes { list-style: none; margin: 0; padding: 0; width: 100%; display: flex; flex-direction: column; }
+.exchange-dispute-closed { display: flex; flex-direction: column; gap: 5px; padding: 12px 0; border-top: 1px solid var(--border); }
+.exchange-dispute-closed:first-child { border-top: 0; padding-top: 0; }
+.exchange-dispute-closed > strong { color: var(--navy); font-size: var(--text-lg); }
+.exchange-dispute-closed > small { color: var(--muted); font-size: var(--text-sm); }
+.exchange-dispute-closed p { margin: 0; color: var(--slate); font-size: var(--text-base); line-height: 1.5; white-space: pre-wrap; overflow-wrap: anywhere; }
+.exchange-dispute-outcome { background: var(--surface-muted); border: 1px solid var(--border); border-radius: var(--radius-sm); padding: 8px 10px; display: flex; flex-direction: column; gap: 4px; }
+.exchange-dispute-outcome strong { color: var(--navy); }
+
+.exchange-card-business > .status.status-cancelled { color: var(--muted) !important; background: var(--surface-muted); }

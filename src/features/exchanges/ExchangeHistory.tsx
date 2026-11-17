@@ -4,7 +4,7 @@ import { History } from 'lucide-react'
 import { showErrorToast } from '../../components/feedback'
 import { toApiError } from '../../lib/api/errors'
 import { formatDateTime, historyActor, historyTitle, type Names } from './exchangeCopy'
-import { getExchangeHistory, type Exchange, type ExchangeEvent } from './exchangesApi'
+import { getExchangeHistory, type Exchange, type ExchangeEvent, type ExchangeMilestone } from './exchangesApi'
 
 type HistoryState =
   | { kind: 'loading' }
@@ -50,8 +50,6 @@ export function ExchangeHistory({ exchange, businessId, names, reloadKey }: { ex
     }
   }
 
-  const milestones = new Map(exchange.milestones.map((milestone) => [milestone.id, milestone]))
-
   return (
     <section className="match-panel" aria-labelledby="exchange-history-title">
       <div className="match-panel-head">
@@ -70,27 +68,7 @@ export function ExchangeHistory({ exchange, businessId, names, reloadKey }: { ex
           <p className="exchange-readonly-note">Nothing has happened in this exchange yet.</p>
         ) : (
           <>
-            <ol className="exchange-history" aria-label="Exchange history">
-              {state.items.map((entry) => {
-                const milestone = entry.milestone_id ? milestones.get(entry.milestone_id) : undefined
-                return (
-                  <li key={entry.id} className={`exchange-history-entry exchange-history-${entry.actor_type}`}>
-                    <span className="exchange-history-dot" aria-hidden="true" />
-                    <div>
-                      <strong>{historyTitle(entry, exchange.revision_limit)}</strong>
-                      {entry.milestone_id && (
-                        <span className="exchange-history-milestone">
-                          {milestone ? `Milestone ${milestone.sequence} · ${milestone.title}` : 'A milestone'}
-                        </span>
-                      )}
-                      <small>
-                        {historyActor(entry, businessId, names)} · <time dateTime={entry.occurred_at}>{formatDateTime(entry.occurred_at)}</time>
-                      </small>
-                    </div>
-                  </li>
-                )
-              })}
-            </ol>
+            <HistoryList items={state.items} milestones={exchange.milestones} revisionLimit={exchange.revision_limit} actor={(entry) => historyActor(entry, businessId, names)} />
             {state.nextCursor && (
               <button type="button" className="button button-secondary button-small" onClick={() => void loadMore()} disabled={state.loadingMore}>
                 <History size={14} aria-hidden="true" /> {state.loadingMore ? 'Loading…' : 'Show earlier history'}
@@ -100,5 +78,38 @@ export function ExchangeHistory({ exchange, businessId, names, reloadKey }: { ex
         )}
       </div>
     </section>
+  )
+}
+
+/** The history entries themselves: what, the milestone it concerns, who and when. Staff screens reuse it. */
+export function HistoryList({ items, milestones, revisionLimit, actor }: {
+  items: ExchangeEvent[]
+  milestones: ExchangeMilestone[]
+  revisionLimit: number | null
+  actor: (entry: ExchangeEvent) => string
+}) {
+  const byId = new Map(milestones.map((milestone) => [milestone.id, milestone]))
+  return (
+    <ol className="exchange-history" aria-label="Exchange history">
+      {items.map((entry) => {
+        const milestone = entry.milestone_id ? byId.get(entry.milestone_id) : undefined
+        return (
+          <li key={entry.id} className={`exchange-history-entry exchange-history-${entry.actor_type}`}>
+            <span className="exchange-history-dot" aria-hidden="true" />
+            <div>
+              <strong>{historyTitle(entry, revisionLimit)}</strong>
+              {entry.milestone_id && (
+                <span className="exchange-history-milestone">
+                  {milestone ? `Milestone ${milestone.sequence} · ${milestone.title}` : 'A milestone'}
+                </span>
+              )}
+              <small>
+                {actor(entry)} · <time dateTime={entry.occurred_at}>{formatDateTime(entry.occurred_at)}</time>
+              </small>
+            </div>
+          </li>
+        )
+      })}
+    </ol>
   )
 }

@@ -829,6 +829,87 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/v1/admin/disputes": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * List Disputes
+         * @description Every dispute: open ones first, oldest first; then closed ones, most recently
+         *     closed first.
+         */
+        get: operations["list_disputes_api_v1_admin_disputes_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/admin/disputes/{dispute_id}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Get Dispute
+         * @description One dispute with the exchange's milestones, latest submissions and history.
+         */
+        get: operations["get_dispute_api_v1_admin_disputes__dispute_id__get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/admin/disputes/{dispute_id}/close": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Close Dispute
+         * @description Record the outcome and close an open dispute. Changes nothing else.
+         */
+        post: operations["close_dispute_api_v1_admin_disputes__dispute_id__close_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/admin/exchanges/{exchange_id}/history": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Get History
+         * @description An exchange's history, newest first, for staff.
+         */
+        get: operations["get_history_api_v1_admin_exchanges__exchange_id__history_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/v1/businesses/{business_id}/uploads": {
         parameters: {
             query?: never;
@@ -2089,6 +2170,132 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/v1/businesses/{business_id}/exchanges/{exchange_id}/cancellation": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Give Notice
+         * @description Give notice to cancel the exchange. It takes effect after the agreement's
+         *     ``cancellation_notice_days``.
+         */
+        post: operations["give_notice_api_v1_businesses__business_id__exchanges__exchange_id__cancellation_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/businesses/{business_id}/exchanges/{exchange_id}/cancellation/withdraw": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Withdraw Notice
+         * @description Withdraw the pending notice. Only the business that gave it.
+         */
+        post: operations["withdraw_notice_api_v1_businesses__business_id__exchanges__exchange_id__cancellation_withdraw_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/businesses/{business_id}/exchanges/{exchange_id}/cancellation/agree": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Agree To Cancel
+         * @description Agree to the other business's notice: the exchange is cancelled at once.
+         */
+        post: operations["agree_to_cancel_api_v1_businesses__business_id__exchanges__exchange_id__cancellation_agree_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/businesses/{business_id}/exchanges/{exchange_id}/disputes": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * List Disputes
+         * @description The exchange's disputes, newest first. Any member of either business.
+         */
+        get: operations["list_disputes_api_v1_businesses__business_id__exchanges__exchange_id__disputes_get"];
+        put?: never;
+        /**
+         * Open Dispute
+         * @description Open a dispute. BFB records it and keeps the evidence; it does not judge it.
+         */
+        post: operations["open_dispute_api_v1_businesses__business_id__exchanges__exchange_id__disputes_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/businesses/{business_id}/exchanges/{exchange_id}/disputes/{dispute_id}/response": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Respond
+         * @description The other business's one response to an open dispute.
+         */
+        post: operations["respond_api_v1_businesses__business_id__exchanges__exchange_id__disputes__dispute_id__response_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/businesses/{business_id}/exchanges/{exchange_id}/disputes/{dispute_id}/withdraw": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Withdraw Dispute
+         * @description Withdraw an open dispute the caller's business opened. It closes with
+         *     resolution ``withdrawn``.
+         */
+        post: operations["withdraw_dispute_api_v1_businesses__business_id__exchanges__exchange_id__disputes__dispute_id__withdraw_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/v1/webhooks/signatures/{provider}": {
         parameters: {
             query?: never;
@@ -2278,6 +2485,218 @@ export interface components {
              * Format: date-time
              */
             updated_at: string;
+        };
+        /**
+         * AdminDisputeDetailResponse
+         * @description A dispute with the evidence to hand (Exchange Terms 15.3).
+         */
+        AdminDisputeDetailResponse: {
+            /**
+             * Id
+             * Format: uuid
+             */
+            id: string;
+            /**
+             * Exchange Id
+             * Format: uuid
+             */
+            exchange_id: string;
+            status: components["schemas"]["DisputeStatus"];
+            category: components["schemas"]["DisputeCategory"];
+            /** Description */
+            description: string;
+            /** Milestone Ids */
+            milestone_ids: string[];
+            /**
+             * Opened By Business Id
+             * Format: uuid
+             */
+            opened_by_business_id: string;
+            opened_by_side: components["schemas"]["Side"];
+            /** Opened By User Id */
+            opened_by_user_id: string | null;
+            /** Opened By User Name */
+            opened_by_user_name: string | null;
+            /**
+             * Opened At
+             * Format: date-time
+             */
+            opened_at: string;
+            /** Response */
+            response: string | null;
+            /** Responded By Business Id */
+            responded_by_business_id: string | null;
+            /** Responded By User Id */
+            responded_by_user_id: string | null;
+            /** Responded By User Name */
+            responded_by_user_name: string | null;
+            /** Responded At */
+            responded_at: string | null;
+            /** Closed At */
+            closed_at: string | null;
+            closed_by: components["schemas"]["DisputeClosedBy"] | null;
+            resolution: components["schemas"]["DisputeResolution"] | null;
+            /** Resolution Note */
+            resolution_note: string | null;
+            /** Closed By User Id */
+            closed_by_user_id: string | null;
+            /** Closed By User Name */
+            closed_by_user_name: string | null;
+            exchange: components["schemas"]["AdminDisputeExchange"];
+            /** Milestones */
+            milestones: components["schemas"]["ExchangeMilestoneResponse"][];
+            cancellation_notice: components["schemas"]["CancellationNoticeResponse"] | null;
+            /** History */
+            history: components["schemas"]["ExchangeEventResponse"][];
+            /** History Next Cursor */
+            history_next_cursor: string | null;
+        };
+        /**
+         * AdminDisputeExchange
+         * @description The exchange a dispute is about, in short.
+         */
+        AdminDisputeExchange: {
+            /**
+             * Id
+             * Format: uuid
+             */
+            id: string;
+            status: components["schemas"]["ExchangeStatus"];
+            /**
+             * Agreement Id
+             * Format: uuid
+             */
+            agreement_id: string;
+            business_a: components["schemas"]["MatchBusinessSummary"];
+            business_b: components["schemas"]["MatchBusinessSummary"];
+            /**
+             * Activated At
+             * Format: date-time
+             */
+            activated_at: string;
+        };
+        /** AdminDisputeListItem */
+        AdminDisputeListItem: {
+            /**
+             * Id
+             * Format: uuid
+             */
+            id: string;
+            /**
+             * Exchange Id
+             * Format: uuid
+             */
+            exchange_id: string;
+            status: components["schemas"]["DisputeStatus"];
+            category: components["schemas"]["DisputeCategory"];
+            /** Description */
+            description: string;
+            /** Milestone Ids */
+            milestone_ids: string[];
+            /**
+             * Opened By Business Id
+             * Format: uuid
+             */
+            opened_by_business_id: string;
+            opened_by_side: components["schemas"]["Side"];
+            /** Opened By User Id */
+            opened_by_user_id: string | null;
+            /** Opened By User Name */
+            opened_by_user_name: string | null;
+            /**
+             * Opened At
+             * Format: date-time
+             */
+            opened_at: string;
+            /** Response */
+            response: string | null;
+            /** Responded By Business Id */
+            responded_by_business_id: string | null;
+            /** Responded By User Id */
+            responded_by_user_id: string | null;
+            /** Responded By User Name */
+            responded_by_user_name: string | null;
+            /** Responded At */
+            responded_at: string | null;
+            /** Closed At */
+            closed_at: string | null;
+            closed_by: components["schemas"]["DisputeClosedBy"] | null;
+            resolution: components["schemas"]["DisputeResolution"] | null;
+            /** Resolution Note */
+            resolution_note: string | null;
+            /** Closed By User Id */
+            closed_by_user_id: string | null;
+            /** Closed By User Name */
+            closed_by_user_name: string | null;
+            exchange: components["schemas"]["AdminDisputeExchange"];
+        };
+        /** AdminDisputeListResponse */
+        AdminDisputeListResponse: {
+            /** Items */
+            items: components["schemas"]["AdminDisputeListItem"][];
+            /** Total */
+            total: number;
+            /** Limit */
+            limit: number;
+            /** Offset */
+            offset: number;
+        };
+        /**
+         * AdminDisputeResponse
+         * @description A dispute as staff see it: also who closed it.
+         */
+        AdminDisputeResponse: {
+            /**
+             * Id
+             * Format: uuid
+             */
+            id: string;
+            /**
+             * Exchange Id
+             * Format: uuid
+             */
+            exchange_id: string;
+            status: components["schemas"]["DisputeStatus"];
+            category: components["schemas"]["DisputeCategory"];
+            /** Description */
+            description: string;
+            /** Milestone Ids */
+            milestone_ids: string[];
+            /**
+             * Opened By Business Id
+             * Format: uuid
+             */
+            opened_by_business_id: string;
+            opened_by_side: components["schemas"]["Side"];
+            /** Opened By User Id */
+            opened_by_user_id: string | null;
+            /** Opened By User Name */
+            opened_by_user_name: string | null;
+            /**
+             * Opened At
+             * Format: date-time
+             */
+            opened_at: string;
+            /** Response */
+            response: string | null;
+            /** Responded By Business Id */
+            responded_by_business_id: string | null;
+            /** Responded By User Id */
+            responded_by_user_id: string | null;
+            /** Responded By User Name */
+            responded_by_user_name: string | null;
+            /** Responded At */
+            responded_at: string | null;
+            /** Closed At */
+            closed_at: string | null;
+            closed_by: components["schemas"]["DisputeClosedBy"] | null;
+            resolution: components["schemas"]["DisputeResolution"] | null;
+            /** Resolution Note */
+            resolution_note: string | null;
+            /** Closed By User Id */
+            closed_by_user_id: string | null;
+            /** Closed By User Name */
+            closed_by_user_name: string | null;
         };
         /** AdminLegalDocumentResponse */
         AdminLegalDocumentResponse: {
@@ -2930,6 +3349,62 @@ export interface components {
             service_area: components["schemas"]["ServiceArea"] | null;
         };
         /**
+         * CancellationNoticeBody
+         * @description ``POST .../exchanges/{exchange_id}/cancellation``.
+         */
+        CancellationNoticeBody: {
+            /** Reason */
+            reason: string;
+        };
+        /**
+         * CancellationNoticeResponse
+         * @description A cancellation notice (Exchange Terms 13.1).
+         */
+        CancellationNoticeResponse: {
+            /**
+             * Id
+             * Format: uuid
+             */
+            id: string;
+            /**
+             * Exchange Id
+             * Format: uuid
+             */
+            exchange_id: string;
+            status: components["schemas"]["CancellationStatus"];
+            /**
+             * Given By Business Id
+             * Format: uuid
+             */
+            given_by_business_id: string;
+            given_by_side: components["schemas"]["Side"];
+            /** Given By User Id */
+            given_by_user_id: string | null;
+            /** Given By User Name */
+            given_by_user_name: string | null;
+            /** Reason */
+            reason: string;
+            /** Notice Days */
+            notice_days: number;
+            /**
+             * Given At
+             * Format: date-time
+             */
+            given_at: string;
+            /**
+             * Effective At
+             * Format: date-time
+             */
+            effective_at: string;
+            /** Ended At */
+            ended_at: string | null;
+        };
+        /**
+         * CancellationStatus
+         * @enum {string}
+         */
+        CancellationStatus: "pending" | "withdrawn" | "agreed" | "effective";
+        /**
          * CandidatePair
          * @description One offer meeting one need, live values. ``offer.business_id`` is the provider.
          */
@@ -3024,6 +3499,15 @@ export interface components {
          * @enum {string}
          */
         ChangeKind: "added" | "removed" | "changed";
+        /**
+         * CloseDisputeBody
+         * @description ``POST /admin/disputes/{dispute_id}/close``.
+         */
+        CloseDisputeBody: {
+            resolution: components["schemas"]["DisputeResolution"];
+            /** Note */
+            note: string;
+        };
         /**
          * CompletenessResponse
          * @description ``score`` is 0 to 100. ``missing`` lists the items still needed before the
@@ -3198,6 +3682,92 @@ export interface components {
          * @enum {string}
          */
         DeliveryFormat: "remote" | "in_person" | "hybrid";
+        /**
+         * DisputeCategory
+         * @enum {string}
+         */
+        DisputeCategory: "missed_deadline" | "rejected_delivery" | "quality" | "non_performance" | "other";
+        /**
+         * DisputeClosedBy
+         * @enum {string}
+         */
+        DisputeClosedBy: "staff" | "business";
+        /** DisputeListResponse */
+        DisputeListResponse: {
+            /** Items */
+            items: components["schemas"]["DisputeResponse"][];
+        };
+        /**
+         * DisputeReplyBody
+         * @description ``POST .../disputes/{dispute_id}/response``.
+         */
+        DisputeReplyBody: {
+            /** Response */
+            response: string;
+        };
+        /**
+         * DisputeResolution
+         * @enum {string}
+         */
+        DisputeResolution: "resolved_by_parties" | "mediation" | "withdrawn" | "other";
+        /**
+         * DisputeResponse
+         * @description A dispute, as both businesses see it.
+         */
+        DisputeResponse: {
+            /**
+             * Id
+             * Format: uuid
+             */
+            id: string;
+            /**
+             * Exchange Id
+             * Format: uuid
+             */
+            exchange_id: string;
+            status: components["schemas"]["DisputeStatus"];
+            category: components["schemas"]["DisputeCategory"];
+            /** Description */
+            description: string;
+            /** Milestone Ids */
+            milestone_ids: string[];
+            /**
+             * Opened By Business Id
+             * Format: uuid
+             */
+            opened_by_business_id: string;
+            opened_by_side: components["schemas"]["Side"];
+            /** Opened By User Id */
+            opened_by_user_id: string | null;
+            /** Opened By User Name */
+            opened_by_user_name: string | null;
+            /**
+             * Opened At
+             * Format: date-time
+             */
+            opened_at: string;
+            /** Response */
+            response: string | null;
+            /** Responded By Business Id */
+            responded_by_business_id: string | null;
+            /** Responded By User Id */
+            responded_by_user_id: string | null;
+            /** Responded By User Name */
+            responded_by_user_name: string | null;
+            /** Responded At */
+            responded_at: string | null;
+            /** Closed At */
+            closed_at: string | null;
+            closed_by: components["schemas"]["DisputeClosedBy"] | null;
+            resolution: components["schemas"]["DisputeResolution"] | null;
+            /** Resolution Note */
+            resolution_note: string | null;
+        };
+        /**
+         * DisputeStatus
+         * @enum {string}
+         */
+        DisputeStatus: "open" | "closed";
         /**
          * DraftResponse
          * @description This business's own draft.
@@ -3476,6 +4046,8 @@ export interface components {
             /** Milestones */
             milestones: components["schemas"]["ExchangeMilestoneResponse"][];
             completion: components["schemas"]["ExchangeCompletionResponse"];
+            cancellation_notice?: components["schemas"]["CancellationNoticeResponse"] | null;
+            open_dispute?: components["schemas"]["DisputeResponse"] | null;
         };
         /**
          * ExchangeServiceResponse
@@ -4214,6 +4786,17 @@ export interface components {
             /** Location Notes */
             location_notes?: string | null;
             urgency?: components["schemas"]["Urgency"] | null;
+        };
+        /**
+         * NewDisputeBody
+         * @description ``POST .../exchanges/{exchange_id}/disputes``.
+         */
+        NewDisputeBody: {
+            category: components["schemas"]["DisputeCategory"];
+            /** Description */
+            description: string;
+            /** Milestone Ids */
+            milestone_ids?: string[];
         };
         /**
          * NewSubmissionBody
@@ -7759,6 +8342,256 @@ export interface operations {
             };
             /** @description `invalid_exchange_transition` with `details.reason` `not_completed` */
             409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    list_disputes_api_v1_admin_disputes_get: {
+        parameters: {
+            query?: {
+                status?: components["schemas"]["DisputeStatus"] | null;
+                limit?: number;
+                offset?: number;
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["AdminDisputeListResponse"];
+                };
+            };
+            /** @description `unauthorized` or `access_token_expired` */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description `forbidden`: not support or administrator */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    get_dispute_api_v1_admin_disputes__dispute_id__get: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                dispute_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["AdminDisputeDetailResponse"];
+                };
+            };
+            /** @description `unauthorized` or `access_token_expired` */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description `forbidden`: not support or administrator */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description `not_found` */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    close_dispute_api_v1_admin_disputes__dispute_id__close_post: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                dispute_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["CloseDisputeBody"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["AdminDisputeResponse"];
+                };
+            };
+            /** @description `unauthorized` or `access_token_expired` */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description `forbidden`: not support or administrator */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description `not_found` */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description `invalid_dispute_status` (`dispute_closed`) */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description `validation_error` */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+        };
+    };
+    get_history_api_v1_admin_exchanges__exchange_id__history_get: {
+        parameters: {
+            query?: {
+                cursor?: string | null;
+                limit?: number;
+            };
+            header?: never;
+            path: {
+                exchange_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ExchangeHistoryResponse"];
+                };
+            };
+            /** @description `invalid_cursor` */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description `unauthorized` or `access_token_expired` */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description `forbidden`: not support or administrator */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description `not_found` */
+            404: {
                 headers: {
                     [name: string]: unknown;
                 };
@@ -12054,6 +12887,478 @@ export interface operations {
                 };
             };
             /** @description `invalid_exchange_transition` with `details.reason` `not_completed` */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    give_notice_api_v1_businesses__business_id__exchanges__exchange_id__cancellation_post: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                exchange_id: string;
+                business_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["CancellationNoticeBody"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["CancellationNoticeResponse"];
+                };
+            };
+            /** @description `unauthorized` or `access_token_expired` */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description `business_role_required`: owner or administrator */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description `not_found`: no such business, the caller is not a member, the business is not part of the exchange, or no such dispute in it */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description `invalid_exchange_transition`: the exchange is closed (`exchange_closed`), a notice is already pending (`cancellation_pending`) or none is (`no_cancellation_notice`) */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Unprocessable Content */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+        };
+    };
+    withdraw_notice_api_v1_businesses__business_id__exchanges__exchange_id__cancellation_withdraw_post: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                exchange_id: string;
+                business_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["CancellationNoticeResponse"];
+                };
+            };
+            /** @description `unauthorized` or `access_token_expired` */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description `business_role_required`, or `exchange_party_not_allowed` (`giving_business`): the other business gave the notice */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description `not_found`: no such business, the caller is not a member, the business is not part of the exchange, or no such dispute in it */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description `invalid_exchange_transition`: the exchange is closed (`exchange_closed`), a notice is already pending (`cancellation_pending`) or none is (`no_cancellation_notice`) */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    agree_to_cancel_api_v1_businesses__business_id__exchanges__exchange_id__cancellation_agree_post: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                exchange_id: string;
+                business_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["CancellationNoticeResponse"];
+                };
+            };
+            /** @description `unauthorized` or `access_token_expired` */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description `business_role_required`, or `exchange_party_not_allowed` (`other_business`): the caller's business gave the notice */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description `not_found`: no such business, the caller is not a member, the business is not part of the exchange, or no such dispute in it */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description `invalid_exchange_transition`: the exchange is closed (`exchange_closed`), a notice is already pending (`cancellation_pending`) or none is (`no_cancellation_notice`) */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    list_disputes_api_v1_businesses__business_id__exchanges__exchange_id__disputes_get: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                exchange_id: string;
+                business_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["DisputeListResponse"];
+                };
+            };
+            /** @description `unauthorized` or `access_token_expired` */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description `not_found`: no such business, the caller is not a member, the business is not part of the exchange, or no such dispute in it */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    open_dispute_api_v1_businesses__business_id__exchanges__exchange_id__disputes_post: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                exchange_id: string;
+                business_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["NewDisputeBody"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["DisputeResponse"];
+                };
+            };
+            /** @description `unauthorized` or `access_token_expired` */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description `business_role_required`: owner or administrator */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description `not_found`: no such business, the caller is not a member, the business is not part of the exchange, or no such dispute in it */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description `dispute_already_open` */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description `validation_error`, including a `milestone_ids` entry that is not a milestone of the exchange */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+        };
+    };
+    respond_api_v1_businesses__business_id__exchanges__exchange_id__disputes__dispute_id__response_post: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                exchange_id: string;
+                dispute_id: string;
+                business_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["DisputeReplyBody"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["DisputeResponse"];
+                };
+            };
+            /** @description `unauthorized` or `access_token_expired` */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description `business_role_required`, or `exchange_party_not_allowed` (`other_business`): the caller's business opened the dispute */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description `not_found`: no such business, the caller is not a member, the business is not part of the exchange, or no such dispute in it */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description `invalid_dispute_status`: closed (`dispute_closed`) or already answered (`already_responded`) */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    withdraw_dispute_api_v1_businesses__business_id__exchanges__exchange_id__disputes__dispute_id__withdraw_post: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                exchange_id: string;
+                dispute_id: string;
+                business_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["DisputeResponse"];
+                };
+            };
+            /** @description `unauthorized` or `access_token_expired` */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description `business_role_required`, or `exchange_party_not_allowed` (`opening_business`): the other business opened the dispute */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description `not_found`: no such business, the caller is not a member, the business is not part of the exchange, or no such dispute in it */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description `invalid_dispute_status`: closed (`dispute_closed`) or already answered (`already_responded`) */
             409: {
                 headers: {
                     [name: string]: unknown;

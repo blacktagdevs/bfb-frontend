@@ -12,6 +12,7 @@ import {
   Link2,
   Menu,
   MessageCircle,
+  MessageSquareWarning,
   Plus,
   ScrollText,
   Search,
@@ -101,6 +102,9 @@ export function AppShell({ children }: { children: ReactNode }) {
               </button>
               <button className={pathname === paths.adminMatches || pathname.startsWith(`${paths.adminMatches}/`) ? 'active' : ''} onClick={() => { go(paths.adminMatches); setMobileOpen(false) }}>
                 <Link2 size={19} /> Matches
+              </button>
+              <button className={pathname === paths.adminDisputes || pathname.startsWith(`${paths.adminDisputes}/`) ? 'active' : ''} onClick={() => { go(paths.adminDisputes); setMobileOpen(false) }}>
+                <MessageSquareWarning size={19} /> Disputes
               </button>
             </>
           )}
