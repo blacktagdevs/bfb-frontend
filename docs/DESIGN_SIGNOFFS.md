@@ -2,7 +2,7 @@
 
 Built work that is waiting on Jamar's sign-off. Each item is already in the app with the default described here, so nothing is blocked. To review an item, run the app locally and open the route listed. Tick the box when it is approved, or write the change you want under the item and an agent will pick it up.
 
-Last updated: 13 November 2026 (start of Phase 4).
+Last updated: 17 November 2026 (start of Phase 6).
 
 ## Design sign-offs
 
@@ -185,6 +185,21 @@ Decisions made to start Phase 5. Numbered from 130 so they do not collide with P
 | 149 | Exchange list contents | The list item has no service titles or values, so cards show milestones, next due date, start date and the agreement rather than what each business provides; the exchange page shows each milestone with who delivers it. Fetching every exchange's detail for the cards was not worth the extra requests | |
 | 150 | Milestone status wording | `pending` reads "Not started" until delivery (Phase 6) adds more statuses | |
 | 151 | Draft banner on exchanges | Not shown on exchange screens (the exchange API does not say whether its agreement used drafts); the signed agreement one click away carries it | |
+
+## Phase 6 defaults
+
+From the Phase 6 breakdown. They follow the draft Exchange Terms, so a lawyer's changes to those terms may change them.
+
+| # | Decision | Default | Approved |
+|---|---|---|---|
+| 152 | Who can act on an exchange | Any member of the delivering business can submit a delivery. Accepting, asking for changes, completion, cancellation and disputes need an owner or administrator | |
+| 153 | Silence on a delivery | Exchange Terms 4.3: after the review period the delivering business can send one reminder per submission; with no answer 5 business days later, the milestone counts as accepted | |
+| 154 | Business days | Monday to Friday, no holiday calendar | |
+| 155 | Timed changes without a scheduler | Deemed acceptance and cancellations taking effect are applied when the exchange is next opened or changed, and by a command a scheduler can run once one is set up | |
+| 156 | Revisions over the limit | Allowed and flagged, not refused: the terms say the delivering business does not have to do more, not that it may not | |
+| 157 | Completion | Both businesses confirm: one owner or administrator requests it once every milestone is accepted, the other business confirms | |
+| 158 | Disputes | BFB records them and keeps the evidence; staff close them with a resolution and note but do not change milestones or the exchange. An open dispute blocks completion and nothing else | |
+| 159 | Notifications | Every action is audited and appears in the exchange history now; email and in-app notifications wait for the Phase 7 outbox. This leaves part of a Phase 6 exit criterion ("audit record and notification") for Phase 7 | |
 
 ## Before staging
 
