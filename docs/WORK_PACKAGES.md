@@ -94,6 +94,7 @@ Recommended order is S0 through S8. The frontend S0 packages need no API work an
 | FE-6.3 | Review a delivery | FE-6.2, API-6.3 | done |
 | FE-6.4 | Completion | FE-6.3, API-6.4 | done |
 | FE-6.5 | Cancellation and disputes | FE-6.1, API-6.5 | done |
+| FE-6.6 | Exchange follow-ups | FE-6.5, API-6.6 | in progress |
 
 ## Phase 0: Foundation
 
