@@ -172,3 +172,18 @@
   .match-pair-choice + .match-pair-meta, .match-pair-choice ~ .fit-factors { margin-left: 0; }
   .admin-filter, .admin-filter select { width: 100%; }
 }
+
+/* Disputes (FE-6.5). */
+.dispute-status-open { background: var(--amber-pale); border-color: #f1dca8; color: var(--amber); }
+.dispute-status-closed { background: var(--surface-muted); color: var(--muted); }
+.admin-info { display: flex; gap: 10px; align-items: flex-start; background: var(--pale-blue); border: 1px solid #c9e5ff; color: var(--slate); border-radius: var(--radius-md); padding: 12px 14px; margin: -12px 0 18px; font-size: var(--text-base); line-height: 1.5; }
+.admin-info svg { flex: 0 0 auto; margin-top: 2px; color: var(--blue); }
+.admin-dispute-milestones { list-style: none; margin: 0; padding: 16px 21px 21px; display: flex; flex-direction: column; gap: 10px; }
+.admin-milestone-named { border-color: #f1dca8; box-shadow: inset 3px 0 0 var(--amber); }
+.admin-dispute-exchange { display: flex; flex-direction: column; gap: 12px; }
+.admin-dispute-history { display: flex; flex-direction: column; align-items: flex-start; gap: 12px; }
+.admin-decision .match-withdrawn p { margin: 4px 0 0; color: var(--slate); }
+
+@media (max-width: 620px) {
+  .admin-dispute-milestones { padding: 14px 16px; }
+}

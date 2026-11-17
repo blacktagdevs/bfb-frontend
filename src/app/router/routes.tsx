@@ -5,6 +5,8 @@ import { AgreementsPage } from '../../features/agreements/AgreementsPage'
 import { ExchangeTermsPage } from '../../features/agreements/ExchangeTermsPage'
 import { AppShell } from '../../components/layout/AppShell'
 import { AdminBusinessPage } from '../../features/admin/AdminBusinessPage'
+import { DisputeDetailPage } from '../../features/admin/DisputeDetailPage'
+import { DisputesPage } from '../../features/admin/DisputesPage'
 import { MatchDetailPage } from '../../features/admin/MatchDetailPage'
 import { MatchesPage } from '../../features/admin/MatchesPage'
 import { NewMatchPage } from '../../features/admin/NewMatchPage'
@@ -36,7 +38,7 @@ import { Onboarding } from '../../features/onboarding/Onboarding'
 import { AcceptInvitePage } from '../../features/team/AcceptInvitePage'
 import { TeamPage } from '../../features/team/TeamPage'
 import { businesses } from '../../mocks/businesses'
-import { adminBusinessPattern, adminMatchPattern, agreementPattern, exchangePattern, exchangeTermsVersionPattern, getBusinessIdFromPath, isBusinessUuid, matchPattern, paths, proposalEditPattern, proposalPattern, proposalVersionPattern, publicBusinessPattern } from './paths'
+import { adminBusinessPattern, adminDisputePattern, adminMatchPattern, agreementPattern, exchangePattern, exchangeTermsVersionPattern, getBusinessIdFromPath, isBusinessUuid, matchPattern, paths, proposalEditPattern, proposalPattern, proposalVersionPattern, publicBusinessPattern } from './paths'
 import { useActiveBusinessId, useMemberships } from '../../lib/businesses/useActiveBusiness'
 import { RequireAuth } from './RequireAuth'
 import { RequireBusiness } from './RequireBusiness'
@@ -141,6 +143,8 @@ export const routes: RouteObject[] = [
               { path: paths.adminMatches, element: <MatchesPage /> },
               { path: paths.adminNewMatch, element: <NewMatchPage /> },
               { path: adminMatchPattern, element: <MatchDetailPage /> },
+              { path: paths.adminDisputes, element: <DisputesPage /> },
+              { path: adminDisputePattern, element: <DisputeDetailPage /> },
             ],
           },
         ],

@@ -1,6 +1,6 @@
 import type { ApiError } from '../../lib/api/errors'
 import { formatMatchDate } from '../matching/matchInboxDisplay'
-import type { Exchange, ExchangeEvent, ExchangeMilestone, ExchangeStatus, MilestoneStatus, Submission } from './exchangesApi'
+import type { DisputeCategory, DisputeResolution, Exchange, ExchangeEvent, ExchangeMilestone, ExchangeStatus, MilestoneStatus, Submission } from './exchangesApi'
 
 // Copy for exchanges: the one place that turns exchange codes into words.
 
@@ -15,6 +15,27 @@ export const MILESTONE_STATUS_LABELS: Record<MilestoneStatus, string> = {
   submitted: 'Submitted',
   changes_requested: 'Changes requested',
   accepted: 'Accepted',
+}
+
+/** Dispute categories (bfb-api docs/EXCHANGES.md, "Disputes"), in the order the form offers them. */
+export const DISPUTE_CATEGORY_LABELS: Record<DisputeCategory, string> = {
+  missed_deadline: 'A deadline was missed',
+  rejected_delivery: 'A delivery was rejected',
+  quality: 'The quality of the work',
+  non_performance: 'Work not done as agreed',
+  other: 'Something else',
+}
+
+/** How staff recorded a dispute's outcome. */
+export const DISPUTE_RESOLUTION_LABELS: Record<DisputeResolution, string> = {
+  resolved_by_parties: 'Resolved by the businesses',
+  mediation: 'Resolved through mediation',
+  withdrawn: 'Withdrawn',
+  other: 'Other outcome',
+}
+
+function labelOf(labels: Record<string, string>, code: unknown): string | null {
+  return typeof code === 'string' ? (labels[code] ?? humanizeCode(code)) : null
 }
 
 export interface Names {
@@ -79,7 +100,9 @@ export function canReviewMilestone(exchange: Exchange, milestone: ExchangeMilest
 
 export type MilestoneAction = 'deliver' | 'accept' | 'request_changes' | 'remind'
 export type CompletionAction = 'request_completion' | 'confirm_completion' | 'withdraw_completion' | 'decline_completion' | 'completion_record'
-export type ExchangeAction = MilestoneAction | CompletionAction
+export type CancellationAction = 'give_notice' | 'withdraw_notice' | 'agree_cancel'
+export type DisputeAction = 'open_dispute' | 'respond_dispute' | 'withdraw_dispute'
+export type ExchangeAction = MilestoneAction | CompletionAction | CancellationAction | DisputeAction
 
 const ACTION_NOTHING: Record<ExchangeAction, string> = {
   deliver: 'your delivery wasn’t submitted',
@@ -91,6 +114,12 @@ const ACTION_NOTHING: Record<ExchangeAction, string> = {
   withdraw_completion: 'nothing was withdrawn',
   decline_completion: 'nothing was declined',
   completion_record: 'the completion record didn’t open',
+  give_notice: 'no notice was given',
+  withdraw_notice: 'the notice wasn’t withdrawn',
+  agree_cancel: 'the exchange wasn’t cancelled',
+  open_dispute: 'your dispute wasn’t opened',
+  respond_dispute: 'your response wasn’t sent',
+  withdraw_dispute: 'the dispute wasn’t withdrawn',
 }
 
 /** Why completion can't happen yet, as the end of a sentence. Unknown blockers read generically. */
@@ -126,8 +155,19 @@ export function conflictNotice(error: ApiError, action: ExchangeAction, names: N
     const required = detail(error, 'required')
     if (required === 'receiving_business') return `Only the business that receives this milestone can review it, so ${nothing}.`
     if (required === 'responsible_business') return `Only the business that delivers this milestone can do that, so ${nothing}.`
-    if (required === 'other_business') return `Only ${names.other} can confirm the request your business made, so ${nothing}.`
+    if (required === 'giving_business') return `Only the business that gave the cancellation notice can withdraw it, so ${nothing}.`
+    if (required === 'opening_business') return `Only the business that opened the dispute can withdraw it, so ${nothing}.`
+    if (required === 'other_business') {
+      if (action === 'agree_cancel') return `Only ${names.other} can agree to the notice your business gave, so ${nothing}.`
+      if (action === 'respond_dispute') return `Only ${names.other} can respond to the dispute your business opened, so ${nothing}.`
+      return `Only ${names.other} can confirm the request your business made, so ${nothing}.`
+    }
     return `That belongs to ${names.other}, so ${nothing}.`
+  }
+  if (error.code === 'dispute_already_open') return `A dispute is already open on this exchange, so ${nothing}. The page now shows it.`
+  if (error.code === 'invalid_dispute_status') {
+    if (detail(error, 'reason') === 'already_responded') return `Someone at ${names.mine} already responded to the dispute, so ${nothing}. The page now shows the response.`
+    return `The dispute was closed since you opened the page, so ${nothing}. The page now shows where it stands.`
   }
   if (error.code === 'invalid_exchange_transition') {
     switch (detail(error, 'reason')) {
@@ -150,6 +190,10 @@ export function conflictNotice(error: ApiError, action: ExchangeAction, names: N
         return `The completion request was withdrawn or declined since you opened the page, so ${nothing}.`
       case 'not_completed':
         return `The exchange isn’t completed yet, so ${nothing}.`
+      case 'cancellation_pending':
+        return `A cancellation notice is already running, so ${nothing}. The page now shows it.`
+      case 'no_cancellation_notice':
+        return `The cancellation notice was withdrawn or took effect since you opened the page, so ${nothing}. The page now shows where it stands.`
     }
   }
   return `This milestone or exchange changed since you opened it, so ${nothing}. The page now shows where it stands.`
@@ -234,7 +278,8 @@ function metaNumber(entry: ExchangeEvent, key: string): number | null {
 }
 
 /** What a history entry records, as a short line. Unknown types read from their code. */
-export function historyTitle(entry: ExchangeEvent, revisionLimit: number): string {
+/** `revisionLimit` is `null` where the screen doesn't have it (staff screens). */
+export function historyTitle(entry: ExchangeEvent, revisionLimit: number | null): string {
   switch (entry.type) {
     case 'exchange.activated':
       return 'Exchange started: both businesses signed the agreement'
@@ -245,12 +290,34 @@ export function historyTitle(entry: ExchangeEvent, revisionLimit: number): strin
     case 'exchange.completion_withdrawn':
       return entry.metadata.by_requesting_business === false ? 'Completion request declined' : 'Completion request withdrawn'
     case 'exchange.cancelled':
+      if (entry.metadata.how === 'agreed') return 'Exchange cancelled: the other business agreed to the notice'
+      if (entry.metadata.how === 'notice') return 'Exchange cancelled: the notice period ended'
       return 'Exchange cancelled'
+    case 'exchange.cancellation_noticed': {
+      const effective = entry.metadata.effective_at
+      return typeof effective === 'string' && metaNumber(entry, 'notice_days') !== 0
+        ? `Notice to cancel given: the exchange is cancelled on ${formatMatchDate(effective)} unless it’s withdrawn`
+        : 'Notice to cancel given'
+    }
+    case 'exchange.cancellation_withdrawn':
+      return 'Cancellation notice withdrawn'
+    case 'dispute.opened': {
+      const category = labelOf(DISPUTE_CATEGORY_LABELS, entry.metadata.category)
+      return category ? `Dispute opened: ${category.charAt(0).toLowerCase()}${category.slice(1)}` : 'Dispute opened'
+    }
+    case 'dispute.responded':
+      return 'Response to the dispute added'
+    case 'dispute.withdrawn':
+      return 'Dispute withdrawn'
+    case 'dispute.closed': {
+      const resolution = labelOf(DISPUTE_RESOLUTION_LABELS, entry.metadata.resolution)
+      return resolution ? `Dispute closed by BFB staff: ${resolution.charAt(0).toLowerCase()}${resolution.slice(1)}` : 'Dispute closed by BFB staff'
+    }
     case 'milestone.submitted': {
       const revision = entry.metadata.is_revision === true ? metaNumber(entry, 'revision_number') : null
       if (revision === null) return 'Delivery submitted'
       return entry.metadata.beyond_revision_limit === true
-        ? `Revision ${revision} submitted (beyond the ${revisionLimit} agreed)`
+        ? `Revision ${revision} submitted (beyond the ${revisionLimit ?? 'agreed limit'}${revisionLimit === null ? '' : ' agreed'})`
         : `Revision ${revision} submitted`
     }
     case 'milestone.accepted':
@@ -272,12 +339,26 @@ export function historyTitle(entry: ExchangeEvent, revisionLimit: number): strin
   }
 }
 
-/** Who did it: "Dana Studio (Northstar Digital)", "BFB" for BFB itself, "BFB staff". */
-export function historyActor(entry: ExchangeEvent, myBusinessId: string, names: Names): string {
+/**
+ * Who did it: "Dana Studio (Northstar Digital)", "BFB" for BFB itself, "BFB staff". Businesses
+ * aren't told which staff member acted, so the name shows only on staff screens (`showStaffName`).
+ */
+export function historyActor(entry: ExchangeEvent, myBusinessId: string, names: Names, { showStaffName = false }: { showStaffName?: boolean } = {}): string {
   if (entry.actor_type === 'system') return 'BFB'
-  if (entry.actor_type === 'staff') return entry.actor_user_name ? `${entry.actor_user_name}, BFB staff` : 'BFB staff'
+  if (entry.actor_type === 'staff') return showStaffName && entry.actor_user_name ? `${entry.actor_user_name}, BFB staff` : 'BFB staff'
   const business = entry.actor_business_id === myBusinessId ? names.mine : names.other
   return `${entry.actor_user_name ?? 'A former team member'} (${business})`
+}
+
+/** "14 days’ notice", "1 day’s notice", "no notice". */
+export function noticeText(days: number): string {
+  if (days === 0) return 'no notice'
+  return days === 1 ? '1 day’s notice' : `${days} days’ notice`
+}
+
+/** When a notice given now would take effect: `days` calendar days later (bfb-api counts calendar days). */
+export function noticeEffectiveAt(days: number, now = new Date()): Date {
+  return new Date(now.getTime() + days * 24 * 60 * 60 * 1000)
 }
 
 /** "Delivery 1", "Revision 1 of 2", "Revision 3 (beyond the 2 agreed)". */

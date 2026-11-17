@@ -47,11 +47,16 @@ export const paths = {
   adminMatches: '/admin/matches',
   adminNewMatch: '/admin/matches/new',
   adminMatch: (id: string) => `/admin/matches/${id}`,
+  /** Admin disputes: open first, and one dispute with its evidence. */
+  adminDisputes: '/admin/disputes',
+  adminDispute: (id: string) => `/admin/disputes/${id}`,
 } as const
 
 export const adminBusinessPattern = '/admin/businesses/:businessId'
 
 export const adminMatchPattern = '/admin/matches/:matchId'
+
+export const adminDisputePattern = '/admin/disputes/:disputeId'
 
 export const matchPattern = '/matches/:matchId'
 

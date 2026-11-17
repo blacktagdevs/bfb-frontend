@@ -23,6 +23,15 @@ export type Decision = Schemas['DecisionResponse']
 export type ExchangeCompletion = Schemas['ExchangeCompletionResponse']
 export type CompletionRequest = Schemas['CompletionRequestResponse']
 export type Reminder = Schemas['ReminderResponse']
+export type CancellationNotice = Schemas['CancellationNoticeResponse']
+export type Dispute = Schemas['DisputeResponse']
+export type DisputeCategory = Schemas['DisputeCategory']
+export type DisputeResolution = Schemas['DisputeResolution']
+export type NewDispute = Schemas['NewDisputeBody']
+
+/** Limits on cancellation and disputes (bfb-api docs/EXCHANGES.md). The server checks again. */
+export const CANCELLATION_LIMITS = { reasonMax: 2000 }
+export const DISPUTE_LIMITS = { descriptionMax: 5000, responseMax: 5000, milestones: 50 }
 
 /** Limits on a change request's reason (bfb-api docs/EXCHANGES.md, "Review"). */
 export const REVIEW_LIMITS = { reasonMax: 5000 }
@@ -137,4 +146,47 @@ export function withdrawCompletion(businessId: string, exchangeId: string): Prom
 /** A fresh short-lived link to the completion record. Never store it. */
 export function getCompletionRecord(businessId: string, exchangeId: string) {
   return apiGet('/businesses/{business_id}/exchanges/{exchange_id}/completion-record', { path: exchangePath(businessId, exchangeId) })
+}
+
+/**
+ * Give notice to cancel (Exchange Terms 13.1; an owner or administrator of either business).
+ * It takes effect `cancellation_notice_days` calendar days later; with 0 days, at once.
+ */
+export function giveCancellationNotice(businessId: string, exchangeId: string, reason: string): Promise<CancellationNotice> {
+  return apiPost('/businesses/{business_id}/exchanges/{exchange_id}/cancellation', { reason }, { path: exchangePath(businessId, exchangeId) })
+}
+
+/** Withdraw the pending notice (the business that gave it). */
+export function withdrawCancellationNotice(businessId: string, exchangeId: string): Promise<CancellationNotice> {
+  return apiPost('/businesses/{business_id}/exchanges/{exchange_id}/cancellation/withdraw', undefined, { path: exchangePath(businessId, exchangeId) })
+}
+
+/** Agree to the other business's notice: the exchange is cancelled now. */
+export function agreeToCancellation(businessId: string, exchangeId: string): Promise<CancellationNotice> {
+  return apiPost('/businesses/{business_id}/exchanges/{exchange_id}/cancellation/agree', undefined, { path: exchangePath(businessId, exchangeId) })
+}
+
+/** The exchange's disputes, newest first (any member of either business). */
+export async function listDisputes(businessId: string, exchangeId: string): Promise<Dispute[]> {
+  const page = await apiGet('/businesses/{business_id}/exchanges/{exchange_id}/disputes', { path: exchangePath(businessId, exchangeId) })
+  return page.items
+}
+
+/** Open a dispute (Exchange Terms 15; an owner or administrator). One may be open at a time. */
+export function openDispute(businessId: string, exchangeId: string, body: NewDispute): Promise<Dispute> {
+  return apiPost('/businesses/{business_id}/exchanges/{exchange_id}/disputes', body, { path: exchangePath(businessId, exchangeId) })
+}
+
+/** Respond to the other business's dispute, once. */
+export function respondToDispute(businessId: string, exchangeId: string, disputeId: string, response: string): Promise<Dispute> {
+  return apiPost('/businesses/{business_id}/exchanges/{exchange_id}/disputes/{dispute_id}/response', { response }, {
+    path: { ...exchangePath(businessId, exchangeId), dispute_id: disputeId },
+  })
+}
+
+/** Withdraw the dispute your business opened: it closes with the resolution `withdrawn`. */
+export function withdrawDispute(businessId: string, exchangeId: string, disputeId: string): Promise<Dispute> {
+  return apiPost('/businesses/{business_id}/exchanges/{exchange_id}/disputes/{dispute_id}/withdraw', undefined, {
+    path: { ...exchangePath(businessId, exchangeId), dispute_id: disputeId },
+  })
 }
