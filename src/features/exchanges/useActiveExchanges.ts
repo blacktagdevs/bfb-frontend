@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useState } from 'react'
 
-import { listActiveExchanges, type ExchangeSummary } from './exchangesApi'
+import { listExchanges, type ExchangeStatus, type ExchangeSummary } from './exchangesApi'
 
 export type ActiveExchanges =
   | { kind: 'loading' }
@@ -9,13 +9,18 @@ export type ActiveExchanges =
 
 /** The business's newest active exchanges, for the dashboard. Reloads when the business changes. */
 export function useActiveExchanges(businessId: string, limit = 20): { state: ActiveExchanges; retry: () => void } {
+  return useExchangeList(businessId, 'active', limit)
+}
+
+/** The business's newest exchanges with one status. Reloads when the business changes. */
+export function useExchangeList(businessId: string, status: ExchangeStatus, limit = 20): { state: ActiveExchanges; retry: () => void } {
   const [state, setState] = useState<ActiveExchanges>({ kind: 'loading' })
   const [reloadKey, setReloadKey] = useState(0)
 
   useEffect(() => {
     let live = true
     setState({ kind: 'loading' })
-    listActiveExchanges(businessId, { limit })
+    listExchanges(businessId, status, { limit })
       .then((page) => {
         if (live) setState({ kind: 'ready', items: page.items, more: page.next_cursor !== null })
       })
@@ -25,7 +30,7 @@ export function useActiveExchanges(businessId: string, limit = 20): { state: Act
     return () => {
       live = false
     }
-  }, [businessId, limit, reloadKey])
+  }, [businessId, status, limit, reloadKey])
 
   return { state, retry: useCallback(() => setReloadKey((key) => key + 1), []) }
 }

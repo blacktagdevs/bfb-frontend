@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react'
 import { ArrowRight, Handshake, ScrollText } from 'lucide-react'
-import { Link } from 'react-router-dom'
+import { Link, useSearchParams } from 'react-router-dom'
 
 import { paths } from '../../app/router/paths'
 import { EmptyState, ErrorState, LoadingState, showErrorToast } from '../../components/feedback'
@@ -11,7 +11,7 @@ import { formatLocation } from '../businesses/profileLabels'
 import { formatMatchDate } from '../matching/matchInboxDisplay'
 import { EXCHANGE_STATUS_LABELS, milestoneCount } from './exchangeCopy'
 import { ProgressBar } from './ProgressBar'
-import { listActiveExchanges, type ExchangeSummary } from './exchangesApi'
+import { listExchanges, type ExchangeStatus, type ExchangeSummary } from './exchangesApi'
 import './ExchangesPage.css'
 
 type Tab = 'Active' | 'Completed'
@@ -21,21 +21,15 @@ type LoadState =
   | { kind: 'error'; error: unknown }
   | { kind: 'ready'; items: ExchangeSummary[]; nextCursor: string | null; loadingMore: boolean }
 
-/**
- * `/exchanges`: the active business's exchanges, in the prototype's cards. Exchanges start
- * once both businesses sign an agreement and are read-only until delivery (Phase 6), so
- * Completed stays empty for now.
- */
-export function ExchangesPage() {
-  const business = useActiveBusiness()
-  const [tab, setTab] = useState<Tab>('Active')
+/** One status's exchanges, newest first, with "Load more". */
+function useExchangePages(businessId: string, status: ExchangeStatus) {
   const [state, setState] = useState<LoadState>({ kind: 'loading' })
   const [reloadKey, setReloadKey] = useState(0)
 
   useEffect(() => {
     let live = true
     setState({ kind: 'loading' })
-    listActiveExchanges(business.id)
+    listExchanges(businessId, status)
       .then((page) => {
         if (live) setState({ kind: 'ready', items: page.items, nextCursor: page.next_cursor, loadingMore: false })
       })
@@ -45,13 +39,13 @@ export function ExchangesPage() {
     return () => {
       live = false
     }
-  }, [business.id, reloadKey])
+  }, [businessId, status, reloadKey])
 
   const loadMore = async () => {
     if (state.kind !== 'ready' || !state.nextCursor) return
     setState({ ...state, loadingMore: true })
     try {
-      const page = await listActiveExchanges(business.id, { cursor: state.nextCursor })
+      const page = await listExchanges(businessId, status, { cursor: state.nextCursor })
       setState((current) =>
         current.kind === 'ready'
           ? { kind: 'ready', items: [...current.items, ...page.items.filter((item) => !current.items.some((seen) => seen.id === item.id))], nextCursor: page.next_cursor, loadingMore: false }
@@ -63,7 +57,22 @@ export function ExchangesPage() {
     }
   }
 
-  const activeCount = state.kind === 'ready' ? `${state.items.length}${state.nextCursor ? '+' : ''}` : null
+  const count = state.kind === 'ready' ? `${state.items.length}${state.nextCursor ? '+' : ''}` : null
+  return { state, count, loadMore, retry: () => setReloadKey((key) => key + 1) }
+}
+
+/**
+ * `/exchanges`: the active business's exchanges, in the prototype's cards, under Active and
+ * Completed tabs (`?tab=completed` opens the second).
+ */
+export function ExchangesPage() {
+  const business = useActiveBusiness()
+  const [params, setParams] = useSearchParams()
+  const tab: Tab = params.get('tab') === 'completed' ? 'Completed' : 'Active'
+  const active = useExchangePages(business.id, 'active')
+  const completed = useExchangePages(business.id, 'completed')
+  const lists: Record<Tab, ReturnType<typeof useExchangePages>> = { Active: active, Completed: completed }
+  const { state, loadMore, retry } = lists[tab]
 
   return (
     <>
@@ -73,28 +82,39 @@ export function ExchangesPage() {
       </div>
       <div className="exchange-tabs" role="tablist" aria-label="Exchanges">
         {(['Active', 'Completed'] as const).map((item) => (
-          <button key={item} type="button" role="tab" id={`exchange-tab-${item}`} aria-selected={tab === item} aria-controls="exchange-tab-panel" className={tab === item ? 'active' : ''} onClick={() => setTab(item)}>
-            {item} {item === 'Active' ? activeCount !== null && <span>{activeCount}</span> : <span>0</span>}
+          <button
+            key={item}
+            type="button"
+            role="tab"
+            id={`exchange-tab-${item}`}
+            aria-selected={tab === item}
+            aria-controls="exchange-tab-panel"
+            className={tab === item ? 'active' : ''}
+            onClick={() => setParams(item === 'Completed' ? { tab: 'completed' } : {}, { replace: true })}
+          >
+            {item} {lists[item].count !== null && <span>{lists[item].count}</span>}
           </button>
         ))}
       </div>
       <div id="exchange-tab-panel" role="tabpanel" aria-labelledby={`exchange-tab-${tab}`}>
-        {tab === 'Completed' ? (
-          <EmptyState icon={Handshake} title="No completed exchanges yet" description="Exchanges move here once both businesses have delivered and accepted every milestone." />
-        ) : state.kind === 'loading' ? (
+        {state.kind === 'loading' ? (
           <LoadingState label="Loading exchanges…" />
         ) : state.kind === 'error' ? (
-          <ErrorState title="We couldn’t load your exchanges" error={state.error} onRetry={() => setReloadKey((key) => key + 1)} />
+          <ErrorState title="We couldn’t load your exchanges" error={state.error} onRetry={retry} />
         ) : state.items.length === 0 ? (
-          <EmptyState
-            icon={Handshake}
-            title="No active exchanges yet"
-            description="An exchange starts when both businesses sign its agreement. Agreements waiting for signatures are on the Agreements page."
-            action={<Link className="button button-secondary button-small" to={paths.agreements}>See your agreements</Link>}
-          />
+          tab === 'Completed' ? (
+            <EmptyState icon={Handshake} title="No completed exchanges yet" description="An exchange moves here once every milestone is accepted and both businesses confirm it is complete." />
+          ) : (
+            <EmptyState
+              icon={Handshake}
+              title="No active exchanges yet"
+              description="An exchange starts when both businesses sign its agreement. Agreements waiting for signatures are on the Agreements page."
+              action={<Link className="button button-secondary button-small" to={paths.agreements}>See your agreements</Link>}
+            />
+          )
         ) : (
           <>
-            <ul className="exchange-page-list" aria-label="Active exchanges">
+            <ul className="exchange-page-list" aria-label={`${tab} exchanges`}>
               {state.items.map((exchange) => <ExchangeCard key={exchange.id} exchange={exchange} />)}
             </ul>
             {state.nextCursor && (
@@ -114,6 +134,7 @@ export function ExchangesPage() {
 function ExchangeCard({ exchange }: { exchange: ExchangeSummary }) {
   const other = exchange.other_business
   const location = formatLocation(other)
+  const completed = exchange.status === 'completed'
   return (
     <li className="exchange-page-card">
       <div className="exchange-card-business">
@@ -121,20 +142,24 @@ function ExchangeCard({ exchange }: { exchange: ExchangeSummary }) {
         <div>
           <span>{other.display_name}</span>
           <strong>Business exchange with {other.display_name}</strong>
-          <small>{location ? `${location} · ` : ''}Active since {formatMatchDate(exchange.activated_at)}</small>
+          <small>{location ? `${location} · ` : ''}{completed ? `Completed ${formatMatchDate(exchange.updated_at)}` : `Active since ${formatMatchDate(exchange.activated_at)}`}</small>
         </div>
-        <span className="status status-progress">{EXCHANGE_STATUS_LABELS[exchange.status]}</span>
+        <span className={`status ${completed ? 'status-complete' : 'status-progress'}`}>{EXCHANGE_STATUS_LABELS[exchange.status]}</span>
       </div>
       <dl className="exchange-trade-summary exchange-facts">
         <div><dt>MILESTONES</dt><dd>{milestoneCount(exchange.milestone_count)}, {exchange.milestones_accepted} accepted</dd></div>
-        <div><dt>NEXT DUE</dt><dd>{exchange.next_due_date ? formatMatchDate(exchange.next_due_date) : 'Nothing due'}</dd></div>
+        {completed ? (
+          <div><dt>COMPLETED</dt><dd>{formatMatchDate(exchange.updated_at)}</dd></div>
+        ) : (
+          <div><dt>NEXT DUE</dt><dd>{exchange.next_due_date ? formatMatchDate(exchange.next_due_date) : 'Nothing due'}</dd></div>
+        )}
         <div><dt>ACTIVE SINCE</dt><dd>{formatMatchDate(exchange.activated_at)}</dd></div>
         <div><dt>AGREEMENT</dt><dd>Signed by both</dd></div>
       </dl>
       <ProgressBar accepted={exchange.milestones_accepted} count={exchange.milestone_count} className="exchange-card-progress" />
       <div className="exchange-card-actions">
         <Link className="button button-secondary" to={paths.agreement(exchange.agreement_id)}>Signed agreement</Link>
-        <Link className="button button-primary" to={paths.exchange(exchange.id)} aria-label={`View exchange with ${other.display_name}`}>View details <ArrowRight size={15} aria-hidden="true" /></Link>
+        <Link className="button button-primary" to={paths.exchange(exchange.id)} aria-label={`View ${completed ? 'completed ' : ''}exchange with ${other.display_name}`}>View details <ArrowRight size={15} aria-hidden="true" /></Link>
       </div>
     </li>
   )

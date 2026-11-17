@@ -78,12 +78,37 @@ export function canReviewMilestone(exchange: Exchange, milestone: ExchangeMilest
 }
 
 export type MilestoneAction = 'deliver' | 'accept' | 'request_changes' | 'remind'
+export type CompletionAction = 'request_completion' | 'confirm_completion' | 'withdraw_completion' | 'decline_completion' | 'completion_record'
+export type ExchangeAction = MilestoneAction | CompletionAction
 
-const ACTION_NOTHING: Record<MilestoneAction, string> = {
+const ACTION_NOTHING: Record<ExchangeAction, string> = {
   deliver: 'your delivery wasn’t submitted',
   accept: 'nothing was accepted',
   request_changes: 'your change request wasn’t sent',
   remind: 'no reminder was sent',
+  request_completion: 'the exchange wasn’t marked complete',
+  confirm_completion: 'the exchange wasn’t completed',
+  withdraw_completion: 'nothing was withdrawn',
+  decline_completion: 'nothing was declined',
+  completion_record: 'the completion record didn’t open',
+}
+
+/** Why completion can't happen yet, as the end of a sentence. Unknown blockers read generically. */
+export function blockerText(code: string): string {
+  switch (code) {
+    case 'milestones_not_accepted':
+      return 'not every milestone is accepted yet'
+    case 'dispute_open':
+      return 'a dispute is open, and BFB staff need to close it first'
+    default:
+      return `something still needs resolving first (${humanizeCode(code).toLowerCase()})`
+  }
+}
+
+/** Several blockers joined into one sentence, for "can’t be completed yet: …". */
+export function blockersSentence(codes: string[]): string {
+  const parts = codes.map(blockerText)
+  return parts.length <= 1 ? (parts[0] ?? '') : `${parts.slice(0, -1).join(', ')} and ${parts[parts.length - 1]}`
 }
 
 function detail(error: ApiError, key: string): unknown {
@@ -94,13 +119,14 @@ function detail(error: ApiError, key: string): unknown {
  * The red notice when an action on a milestone was refused because something changed: the page
  * reloads the exchange and says why, as proposals and agreements do (rows 103 and 146).
  */
-export function conflictNotice(error: ApiError, action: MilestoneAction, names: Names): string {
+export function conflictNotice(error: ApiError, action: ExchangeAction, names: Names): string {
   const nothing = ACTION_NOTHING[action]
   if (error.code === 'business_role_required') return `Only owners and administrators of ${names.mine} can do that, so ${nothing}. Your role may have changed.`
   if (error.code === 'exchange_party_not_allowed') {
     const required = detail(error, 'required')
     if (required === 'receiving_business') return `Only the business that receives this milestone can review it, so ${nothing}.`
     if (required === 'responsible_business') return `Only the business that delivers this milestone can do that, so ${nothing}.`
+    if (required === 'other_business') return `Only ${names.other} can confirm the request your business made, so ${nothing}.`
     return `That belongs to ${names.other}, so ${nothing}.`
   }
   if (error.code === 'invalid_exchange_transition') {
@@ -112,7 +138,18 @@ export function conflictNotice(error: ApiError, action: MilestoneAction, names: 
       case 'reminder_already_sent':
         return `A reminder was already sent for this delivery, so ${nothing}. The page now shows it.`
       case 'exchange_closed':
-        return `This exchange is closed, so ${nothing}.`
+        return `This exchange is closed, so ${nothing}. The page now shows where it stands.`
+      case 'completion_blocked': {
+        const blockers = detail(error, 'blockers')
+        const why = Array.isArray(blockers) && blockers.length > 0 ? blockersSentence(blockers.map(String)) : 'something still needs resolving'
+        return `The exchange can’t be completed yet: ${why}. So ${nothing}.`
+      }
+      case 'completion_already_requested':
+        return `Completion was already requested, so ${nothing}. The page now shows the request.`
+      case 'no_completion_request':
+        return `The completion request was withdrawn or declined since you opened the page, so ${nothing}.`
+      case 'not_completed':
+        return `The exchange isn’t completed yet, so ${nothing}.`
     }
   }
   return `This milestone or exchange changed since you opened it, so ${nothing}. The page now shows where it stands.`
@@ -167,7 +204,16 @@ export function nextStepText(exchange: Exchange, businessId: string, names: Name
   const theirNext = earliest(theirs.filter((milestone) => milestone.status === 'pending' || milestone.status === 'changes_requested'))
   if (theirNext) return `Nothing for you to do now. ${names.other} delivers “${theirNext.title}” next${due(theirNext, ', due ')}.`
 
-  return 'Every milestone is accepted. Completing the exchange comes next.'
+  const request = exchange.completion.request
+  if (request?.status === 'pending') {
+    if (request.requested_by_business_id === businessId) return `Nothing for you to do now. ${names.other} needs to confirm completion.`
+    const who = canReview ? '' : ` An owner or administrator of ${names.mine} does this.`
+    return `Confirm completion: ${names.other} marked the exchange complete.${who}`
+  }
+  const blockers = exchange.completion.blockers.filter((code) => code !== 'milestones_not_accepted')
+  if (blockers.length > 0) return `Every milestone is accepted, but the exchange can’t be completed yet: ${blockersSentence(blockers)}.`
+  const who = canReview ? '' : ` An owner or administrator of either business does this.`
+  return `Every milestone is accepted. Mark the exchange complete; ${names.other} then confirms it.${who}`
 }
 
 /** "milestone.reminder_sent" → "Reminder sent", for history types this screen doesn't know yet. */
@@ -193,7 +239,11 @@ export function historyTitle(entry: ExchangeEvent, revisionLimit: number): strin
     case 'exchange.activated':
       return 'Exchange started: both businesses signed the agreement'
     case 'exchange.completed':
-      return 'Exchange completed'
+      return 'Exchange completed: both businesses confirmed'
+    case 'exchange.completion_requested':
+      return 'Completion requested'
+    case 'exchange.completion_withdrawn':
+      return entry.metadata.by_requesting_business === false ? 'Completion request declined' : 'Completion request withdrawn'
     case 'exchange.cancelled':
       return 'Exchange cancelled'
     case 'milestone.submitted': {

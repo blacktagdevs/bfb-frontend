@@ -101,4 +101,5 @@ button.dashboard-match-count { border: 0; font: inherit; text-align: left; curso
 /* Real active exchanges (FE-5.3). */
 ul.exchange-list { list-style: none; margin: 0; padding: 0; }
 .dashboard-panel-note { margin: 0; padding: 14px 0 4px; border-top: 1px solid var(--border); color: var(--muted); font-size: var(--text-sm); line-height: 1.55; }
-.dashboard-panel-note .dashboard-profile-action { display: inline-flex; }
+.dashboard-panel-note .dashboard-profile-action { display: inline-flex; color: var(--blue); font-size: var(--text-sm); }
+.dashboard-completed-note > svg { vertical-align: -2px; color: var(--green); }

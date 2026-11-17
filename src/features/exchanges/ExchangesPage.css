@@ -165,3 +165,17 @@ ul.exchange-page-list { list-style: none; margin: 0; padding: 0; }
 .exchange-milestone .exchange-decision p.exchange-decision-reason { color: var(--slate); font-size: var(--text-base); white-space: pre-wrap; }
 .exchange-review-form .exchange-milestone-criteria { background: white; }
 .exchange-accept-dialog .proposal-accept-summary dd { overflow-wrap: anywhere; }
+
+/* Completion (FE-6.4): the panel at the top of the exchange and completed cards. */
+.exchange-completion { background: var(--pale-blue); border-color: #c9e5ff; }
+.exchange-completion-done { background: var(--green-pale); border-color: #ccecdf; }
+.exchange-completion .match-side-title { display: inline-flex; align-items: center; gap: 6px; }
+.exchange-completion > p { margin: 0; color: var(--slate); font-size: var(--text-lg); line-height: 1.55; }
+.exchange-completion > p.exchange-completion-blocked { color: #9a6700; font-size: var(--text-base); }
+.exchange-completion > p.exchange-lock-line { font-size: var(--text-base); }
+.exchange-completion .match-notice { margin: 0; }
+.exchange-completion-actions { display: flex; flex-wrap: wrap; gap: 8px; }
+.exchange-completion-actions .button-secondary { background: white; }
+.exchange-completion > p.agreement-signed-hashes { color: var(--text-subtle); font-size: var(--text-sm); line-height: 1.6; }
+.exchange-completion .agreement-signed-hashes code { font-family: Menlo, Consolas, monospace; font-size: .95em; word-break: break-all; color: var(--slate); }
+.exchange-card-business > .status.status-complete { color: var(--green) !important; }
