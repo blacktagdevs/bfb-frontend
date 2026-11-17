@@ -1,10 +1,11 @@
 import { useState } from 'react'
-import { ExternalLink, FileDown, Info, Send } from 'lucide-react'
+import { ExternalLink, FileDown, Send } from 'lucide-react'
 
 import { showErrorToast } from '../../components/feedback'
 import { toApiError, type ApiError } from '../../lib/api/errors'
-import { canDeliver, formatBytes, formatDateTime, revisionsIncluded, submissionLabel, type Names } from './exchangeCopy'
+import { canDeliver, formatBytes, formatDateTime, revisionsIncluded, submissionLabel, type MilestoneAction, type Names } from './exchangeCopy'
 import { DeliveryForm } from './DeliveryForm'
+import { MilestoneReview, SubmissionOutcome } from './MilestoneReview'
 import { getAttachmentUrl, listSubmissions, type Exchange, type ExchangeMilestone, type Submission } from './exchangesApi'
 
 type Earlier =
@@ -14,17 +15,22 @@ type Earlier =
   | { kind: 'ready'; items: Submission[] }
 
 /**
- * A milestone's action area: its deliveries (the latest first, earlier ones on request) and,
- * for the business that delivers it, "Submit delivery" with the form. The receiving business
- * never sees the form.
+ * A milestone's action area: its deliveries (the latest first, earlier ones on request) with
+ * the decision on each; for the business that delivers it, "Submit delivery" with the form
+ * (the receiving business never sees it); and the review: accept or ask for changes, or a
+ * reminder once the review period has ended.
  */
-export function MilestoneDeliveries({ exchange, milestone, businessId, names, onSubmitted, onConflict }: {
+export function MilestoneDeliveries({ exchange, milestone, businessId, names, canAct, onSubmitted, onReviewed, onConflict }: {
   exchange: Exchange
   milestone: ExchangeMilestone
   businessId: string
   names: Names
+  /** Owners and administrators review, remind and complete; any member delivers. */
+  canAct: boolean
   onSubmitted: (submission: Submission) => void
-  onConflict: (error: ApiError) => void
+  /** A review action worked: show the toast and reload. */
+  onReviewed: (toast: string) => void
+  onConflict: (error: ApiError, action: MilestoneAction) => void
 }) {
   const [formOpen, setFormOpen] = useState(false)
   const [earlier, setEarlier] = useState<Earlier>({ kind: 'hidden' })
@@ -78,7 +84,7 @@ export function MilestoneDeliveries({ exchange, milestone, businessId, names, on
           }}
           onConflict={(error) => {
             setFormOpen(false)
-            onConflict(error)
+            onConflict(error, 'deliver')
           }}
         />
       ) : (
@@ -89,9 +95,18 @@ export function MilestoneDeliveries({ exchange, milestone, businessId, names, on
           <span>Any member of {names.mine} can submit it.</span>
         </div>
       ))}
-      {!mine && milestone.status === 'submitted' && (
-        <p className="exchange-readonly-note"><Info size={14} aria-hidden="true" /> Accepting a delivery or asking for changes on BFB comes in a later release.</p>
-      )}
+      <MilestoneReview
+        exchange={exchange}
+        milestone={milestone}
+        businessId={businessId}
+        names={names}
+        canAct={canAct}
+        onDone={(toast) => {
+          setEarlier({ kind: 'hidden' })
+          onReviewed(toast)
+        }}
+        onConflict={onConflict}
+      />
     </>
   )
 }
@@ -166,6 +181,7 @@ function SubmissionCard({ submission, exchange, businessId, names, delivererName
           The agreement includes {revisionsIncluded(exchange.revision_limit)}, so it didn’t require {delivererName} to make this revision.
         </p>
       )}
+      <SubmissionOutcome submission={submission} businessId={businessId} names={names} />
     </article>
   )
 }

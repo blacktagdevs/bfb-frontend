@@ -102,7 +102,7 @@ describe('exchange workspace copy', () => {
     expect(historyActor(submittedEvent(), 'business-1', names)).toBe('Alex Morgan (Northstar Digital)')
     expect(historyActor(submittedEvent({ actor_business_id: STUDIO_ID, actor_user_name: null }), 'business-1', names)).toBe('A former team member (Northside Studio)')
     expect(historyTitle(submittedEvent({ metadata: { is_revision: true, revision_number: 3, beyond_revision_limit: true } }), 2)).toBe('Revision 3 submitted (beyond the 2 agreed)')
-    expect(historyTitle(submittedEvent({ type: 'milestone.deemed_accepted', actor_type: 'system' }), 2)).toBe('Treated as accepted under the agreement’s terms')
+    expect(historyTitle(submittedEvent({ type: 'milestone.deemed_accepted', actor_type: 'system' }), 2)).toBe('Treated as accepted under the agreement’s terms: no decision came within 5 business days of the reminder')
     expect(historyTitle(submittedEvent({ type: 'milestone.reminder_sent', from_status: null, to_status: null }), 2)).toBe('Reminder sent')
     expect(historyTitle(submittedEvent({ type: 'exchange.cancellation_noticed', milestone_id: null, from_status: 'active', to_status: 'cancelled' }), 2)).toBe('Cancellation noticed: Active to Cancelled')
     expect(historyActor(submittedEvent({ actor_type: 'staff', actor_user_name: 'Sam Lee' }), 'business-1', names)).toBe('Sam Lee, BFB staff')

@@ -1,3 +1,4 @@
+import type { ApiError } from '../../lib/api/errors'
 import { formatMatchDate } from '../matching/matchInboxDisplay'
 import type { Exchange, ExchangeEvent, ExchangeMilestone, ExchangeStatus, MilestoneStatus, Submission } from './exchangesApi'
 
@@ -51,6 +52,72 @@ export function formatDateTime(value: string, now = new Date()): string {
   return `${formatMatchDate(value, now)}, ${time.format(new Date(value))}`
 }
 
+const dayDate = new Intl.DateTimeFormat('en-GB', { weekday: 'long', day: 'numeric', month: 'long' })
+const dayDateYear = new Intl.DateTimeFormat('en-GB', { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' })
+
+/** "Friday 27 November at 10:00" (with the year when it is not this year), in the viewer's time zone. */
+export function formatDayTime(value: string, now = new Date()): string {
+  const date = new Date(value)
+  const day = (date.getFullYear() === now.getFullYear() ? dayDate : dayDateYear).format(date).replace(',', '')
+  return `${day} at ${time.format(date)}`
+}
+
+/** Whether the milestone's review period has ended with its delivery still undecided. */
+export function reviewOverdue(milestone: ExchangeMilestone, now = new Date()): boolean {
+  return milestone.status === 'submitted' && milestone.review_due_at !== null && new Date(milestone.review_due_at).getTime() <= now.getTime()
+}
+
+/** Whether the delivering business can send a reminder on the milestone now (owners and administrators). */
+export function canRemind(exchange: Exchange, milestone: ExchangeMilestone, businessId: string, now = new Date()): boolean {
+  return exchange.status === 'active' && milestone.responsible_business_id === businessId && reviewOverdue(milestone, now) && milestone.reminder_sent_at === null
+}
+
+/** Whether your business reviews the milestone's latest delivery now (owners and administrators). */
+export function canReviewMilestone(exchange: Exchange, milestone: ExchangeMilestone, businessId: string): boolean {
+  return exchange.status === 'active' && milestone.receiving_business_id === businessId && milestone.status === 'submitted' && milestone.latest_submission !== null
+}
+
+export type MilestoneAction = 'deliver' | 'accept' | 'request_changes' | 'remind'
+
+const ACTION_NOTHING: Record<MilestoneAction, string> = {
+  deliver: 'your delivery wasn’t submitted',
+  accept: 'nothing was accepted',
+  request_changes: 'your change request wasn’t sent',
+  remind: 'no reminder was sent',
+}
+
+function detail(error: ApiError, key: string): unknown {
+  return typeof error.details === 'object' && error.details !== null ? (error.details as Record<string, unknown>)[key] : undefined
+}
+
+/**
+ * The red notice when an action on a milestone was refused because something changed: the page
+ * reloads the exchange and says why, as proposals and agreements do (rows 103 and 146).
+ */
+export function conflictNotice(error: ApiError, action: MilestoneAction, names: Names): string {
+  const nothing = ACTION_NOTHING[action]
+  if (error.code === 'business_role_required') return `Only owners and administrators of ${names.mine} can do that, so ${nothing}. Your role may have changed.`
+  if (error.code === 'exchange_party_not_allowed') {
+    const required = detail(error, 'required')
+    if (required === 'receiving_business') return `Only the business that receives this milestone can review it, so ${nothing}.`
+    if (required === 'responsible_business') return `Only the business that delivers this milestone can do that, so ${nothing}.`
+    return `That belongs to ${names.other}, so ${nothing}.`
+  }
+  if (error.code === 'invalid_exchange_transition') {
+    switch (detail(error, 'reason')) {
+      case 'not_latest_submission':
+        return `${names.other} submitted a newer delivery since you opened the page, so ${nothing}. Review the latest one below.`
+      case 'review_period_running':
+        return `The review period hasn’t ended yet, so ${nothing}. You can send one once it ends.`
+      case 'reminder_already_sent':
+        return `A reminder was already sent for this delivery, so ${nothing}. The page now shows it.`
+      case 'exchange_closed':
+        return `This exchange is closed, so ${nothing}.`
+    }
+  }
+  return `This milestone or exchange changed since you opened it, so ${nothing}. The page now shows where it stands.`
+}
+
 function earliest(milestones: ExchangeMilestone[]): ExchangeMilestone | undefined {
   return milestones[0]
 }
@@ -59,7 +126,7 @@ function earliest(milestones: ExchangeMilestone[]): ExchangeMilestone | undefine
  * What your business does next on the exchange, in one or two sentences. Until notifications
  * arrive (Phase 7) it says what the other business needs to do, never that they were told.
  */
-export function nextStepText(exchange: Exchange, businessId: string, names: Names, { canReview }: { canReview: boolean }): string {
+export function nextStepText(exchange: Exchange, businessId: string, names: Names, { canReview, now = new Date() }: { canReview: boolean; now?: Date }): string {
   if (exchange.status === 'completed') return 'The exchange is complete. There is nothing more to do.'
   if (exchange.status === 'cancelled') return 'The exchange was cancelled. There is nothing more to do.'
   if (exchange.milestones.length === 0) return 'This exchange has no milestones.'
@@ -81,6 +148,15 @@ export function nextStepText(exchange: Exchange, businessId: string, names: Name
 
   const toDeliver = earliest(mine.filter((milestone) => milestone.status === 'pending'))
   if (toDeliver) return `Deliver “${toDeliver.title}”${due(toDeliver, ' by ')}.`
+
+  const overdue = earliest(mine.filter((milestone) => reviewOverdue(milestone, now)))
+  if (overdue?.deemed_acceptance_at) {
+    return `Nothing for you to do now. If ${names.other} doesn’t decide on “${overdue.title}” by ${formatMatchDate(overdue.deemed_acceptance_at)}, it is treated as accepted.`
+  }
+  if (overdue) {
+    const who = canReview ? '' : ` An owner or administrator of ${names.mine} does this.`
+    return `${names.other} didn’t review “${overdue.title}” in time. Send a reminder: if they still don’t decide within 5 business days, it is treated as accepted.${who}`
+  }
 
   const inReview = earliest(mine.filter((milestone) => milestone.status === 'submitted'))
   if (inReview) {
@@ -130,9 +206,13 @@ export function historyTitle(entry: ExchangeEvent, revisionLimit: number): strin
     case 'milestone.accepted':
       return 'Delivery accepted'
     case 'milestone.deemed_accepted':
-      return 'Treated as accepted under the agreement’s terms'
+      return 'Treated as accepted under the agreement’s terms: no decision came within 5 business days of the reminder'
     case 'milestone.changes_requested':
       return 'Changes requested'
+    case 'milestone.reminder_sent': {
+      const deemed = entry.metadata.deemed_acceptance_at
+      return typeof deemed === 'string' ? `Reminder sent: treated as accepted on ${formatMatchDate(deemed)} if there’s no decision by then` : 'Reminder sent'
+    }
     default: {
       const title = humanizeCode(entry.type)
       if (entry.to_status && entry.from_status) return `${title}: ${statusWord(entry, entry.from_status)} to ${statusWord(entry, entry.to_status)}`

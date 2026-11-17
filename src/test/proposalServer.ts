@@ -371,6 +371,8 @@ export function exchangeDetail(overrides: Partial<Exchange> = {}): Exchange {
     latest_submission: null,
     review_due_at: null,
     revisions_used: 0,
+    reminder_sent_at: null,
+    deemed_acceptance_at: null,
     ...extra,
   })
   return {
@@ -399,6 +401,7 @@ export function exchangeDetail(overrides: Partial<Exchange> = {}): Exchange {
       milestone(2, 'b', 'First monthly reconciliation', '2027-02-10', { description: 'January books closed.' }),
       milestone(3, 'a', 'Final brand guide', null),
     ],
+    completion: { blockers: ['milestones_not_accepted'], request: null, completed_at: null, record: null },
     ...overrides,
   }
 }
